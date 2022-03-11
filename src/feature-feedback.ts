@@ -39,7 +39,7 @@ export class FeatureFeedback extends LitElement {
   private async setupRecaptcha() {
     if (this.recaptchaManager) return;
     this.recaptchaManager = await RecaptchaManager.getRecaptchaManager({
-      siteKey: '6LeTUvYUAAAAAPTvW98MaXyS8c6vxk4-9n8DI1ve',
+      siteKey: '',
     });
     const element = document.querySelector('#recaptcha') as HTMLDivElement;
     this.recaptchaManager.setup(element, 0, 'light', 'image');
