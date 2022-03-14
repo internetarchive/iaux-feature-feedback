@@ -257,6 +257,7 @@ export class FeatureFeedback extends LitElement {
     const betaButtonSvgFilter = css`var(--featureFeedbackBetaButtonSvgFilter, ${darkGrayColorSvgFilter})`;
 
     const cancelButtonColor = css`var(--featureFeedbackCancelButtonColor, #515151)`;
+    const popupBlockerColor = css`var(--featureFeedbackPopupBlockerColor, rgba(255, 255, 255, 0.3))`;
 
     const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #F5F5F7)`;
 
@@ -307,6 +308,8 @@ export class FeatureFeedback extends LitElement {
         left: 0;
         width: 100%;
         height: 100%;
+        z-index: 1;
+        background-color: ${popupBlockerColor};
       }
 
       #popup {
@@ -316,6 +319,7 @@ export class FeatureFeedback extends LitElement {
         border: 2px ${popupBorderColor} solid;
         border-radius: 5px;
         box-shadow: 1px 1px 2px #000000;
+        z-index: 2;
       }
 
       button,
