@@ -18,9 +18,9 @@ export class FeatureFeedback extends LitElement {
 
   @query('#beta-button') private betaButton!: HTMLButtonElement;
 
-  @query('#popup') private popup!: HTMLDivElement;
+  @query('#popup') private popup?: HTMLDivElement;
 
-  @state() private isOpen = true;
+  @state() private isOpen = false;
 
   @state() private popupPosition = '';
 
@@ -34,7 +34,22 @@ export class FeatureFeedback extends LitElement {
 
   render() {
     return html`
-      <button id="beta-button" @click=${this.showPopup}>Beta</button>
+      <button
+        id="beta-button"
+        @click=${this.showPopup}
+        @keyup=${this.betaButtonKeyUp}
+        tabindex="0"
+      >
+        Beta
+        <span class="beta-button-thumb upvote-button ${this.upvoteButtonClass}"
+          >${thumbsUp}</span
+        >
+        <span
+          class="beta-button-thumb downvote-button ${this.downvoteButtonClass}"
+          id="beta-button-thumb-down"
+          >${thumbsDown}</span
+        >
+      </button>
       ${this.isOpen ? this.popupTemplate : nothing}
     `;
   }
@@ -49,6 +64,12 @@ export class FeatureFeedback extends LitElement {
     this.recaptchaManager.setup(element, 0, 'light', 'image');
   }
 
+  private async betaButtonKeyUp(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      this.showPopup();
+    }
+  }
+
   private async showPopup() {
     const boundingRect = this.betaButton.getBoundingClientRect();
     this.popupTopX = boundingRect.right - 10;
@@ -60,36 +81,63 @@ export class FeatureFeedback extends LitElement {
   private get popupTemplate() {
     return html`
       <div
-        id="popup"
-        style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
+        id="popup-background"
+        @click=${this.backgroundClicked}
+        @keyup=${this.backgroundClicked}
       >
-        <div id="prompt">
-          <div id="prompt-text">Do you find this feature useful?</div>
-          <button
-            id="upvote"
-            @click=${() => {
-              this.vote = this.vote === 'up' ? undefined : 'up';
-            }}
-            class="vote-button ${this.upvoteButtonClass}"
-          >
-            ${thumbsUp}
-          </button>
-          <button
-            id="downvote"
-            @click=${() => {
-              this.vote = this.vote === 'down' ? undefined : 'down';
-            }}
-            class="vote-button ${this.downvoteButtonClass}"
-          >
-            ${thumbsDown}
-          </button>
-        </div>
-        <div>
-          <textarea placeholder="Comments (optional)" id="comments"></textarea>
-        </div>
-        <div id="actions">
-          <button @click=${this.closePopup}>Close</button>
-          <button @click=${this.submit}>Submit</button>
+        <div
+          id="popup"
+          style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
+        >
+          <form @submit=${this.submit} id="form">
+            <div id="prompt">
+              <div id="prompt-text">Do you find this feature useful?</div>
+              <button
+                @click=${(e: Event) => {
+                  e.preventDefault();
+                  this.vote = this.vote === 'up' ? undefined : 'up';
+                }}
+                class="vote-button upvote-button ${this.upvoteButtonClass}"
+                tabindex="0"
+              >
+                ${thumbsUp}
+              </button>
+              <button
+                @click=${(e: Event) => {
+                  e.preventDefault();
+                  this.vote = this.vote === 'down' ? undefined : 'down';
+                }}
+                class="vote-button downvote-button ${this.downvoteButtonClass}"
+                tabindex="0"
+              >
+                ${thumbsDown}
+              </button>
+            </div>
+            <div>
+              <textarea
+                placeholder="Comments (optional)"
+                id="comments"
+                tabindex="0"
+              ></textarea>
+            </div>
+            <div id="actions">
+              <button
+                @click=${this.cancel}
+                id="cancel-button"
+                class="cta-button"
+                tabindex="0"
+              >
+                Cancel
+              </button>
+              <input
+                type="submit"
+                id="submit-button"
+                class="cta-button"
+                value="Submit feedback"
+                tabindex="0"
+              />
+            </div>
+          </form>
         </div>
       </div>
     `;
@@ -117,15 +165,25 @@ export class FeatureFeedback extends LitElement {
     }
   }
 
+  private backgroundClicked(e: MouseEvent) {
+    if (!(e.target instanceof Node)) return;
+    if (this.popup?.contains(e.target)) return;
+    this.closePopup();
+  }
+
+  private cancel() {
+    this.vote = undefined;
+    this.closePopup();
+  }
+
   private closePopup() {
     this.isOpen = false;
   }
 
-  private async submit() {
-    if (!this.featureIdentifier) {
-      console.error('please set featureIdentifier');
-      return;
-    }
+  private async submit(e: Event) {
+    e.preventDefault();
+
+    if (!this.featureIdentifier) return;
     await this.setupRecaptcha();
     if (!this.recaptchaManager) return;
     const token = await this.recaptchaManager.execute();
@@ -139,12 +197,24 @@ export class FeatureFeedback extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
+    const blueColor = css`var(--featureFeedbackBlueColor, #194880)`;
+    const darkGrayColor = css`var(--featureFeedbackDarkGrayColor, #767676)`;
+    const darkGrayColorSvgFilter = css`var(--defaultColorSvgFilter, invert(52%) sepia(0%) saturate(1%) hue-rotate(331deg) brightness(87%) contrast(89%))`;
+
+    const popupBorderColor = css`var(--featureFeedbackPopupBorderColor, ${blueColor})`;
+    const submitButtonColor = css`var(--featureFeedbackSubmitButtonColor, ${blueColor})`;
+    const betaButtonBorderColor = css`var(--featureFeedbackBetaButtonBorderColor, ${blueColor})`;
+    const betaButtonTextColor = css`var(--featureFeedbackBetaButtonTextColor, ${blueColor})`;
+    const betaButtonSvgFilter = css`var(--featureFeedbackBetaButtonSvgFilter, ${darkGrayColorSvgFilter})`;
+
+    const cancelButtonColor = css`var(--featureFeedbackCancelButtonColor, #515151)`;
+
     const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #F5F5F7)`;
 
     const promptFont = css`var(--featureFeedbackPromptFont, bold 14px "Helvetica Neue bold", sans-serif)`;
 
-    const defaultColor = css`var(--defaultColor, #767676);`;
-    const defaultColorSvgFilter = css`var(--defaultColorSvgFilter, invert(52%) sepia(0%) saturate(1%) hue-rotate(331deg) brightness(87%) contrast(89%));`;
+    const defaultColor = css`var(--defaultColor, ${darkGrayColor});`;
+    const defaultColorSvgFilter = css`var(--defaultColorSvgFilter, ${darkGrayColorSvgFilter});`;
 
     const upvoteColor = css`var(--upvoteColor, #23765D);`;
     const upvoteColorSvgFilter = css`var(--upvoteColorSvgFilter, invert(34%) sepia(72%) saturate(357%) hue-rotate(111deg) brightness(97%) contrast(95%));`;
@@ -156,20 +226,58 @@ export class FeatureFeedback extends LitElement {
     const unselectedColorSvgFilter = css`var(--unselectedColorSvgFilter, invert(100%) sepia(0%) saturate(107%) hue-rotate(138deg) brightness(89%) contrast(77%));`;
 
     return css`
+      #beta-button {
+        font-size: 12px;
+        font-weight: bold;
+        font-style: italic;
+        color: ${betaButtonTextColor};
+        border: 1px solid ${betaButtonBorderColor};
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+
+      .beta-button-thumb svg {
+        height: 10px;
+        width: 10px;
+        filter: ${betaButtonSvgFilter};
+      }
+
+      .beta-button-thumb.unselected svg {
+        filter: ${unselectedColorSvgFilter};
+      }
+
+      #popup-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
       #popup {
         position: absolute;
         padding: 10px;
         background-color: ${popupBackgroundColor};
-        border: 2px #194880 solid;
+        border: 2px ${popupBorderColor} solid;
         border-radius: 5px;
         box-shadow: 1px 1px 2px #000000;
       }
 
-      #popup > div {
+      button,
+      input[type='submit'] {
+        background: none;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border: none;
+      }
+
+      #form > div {
         margin-bottom: 10px;
       }
 
-      #popup > div:last-child {
+      #form > div:last-child {
         margin-bottom: 0;
       }
 
@@ -185,21 +293,44 @@ export class FeatureFeedback extends LitElement {
         background-color: #ffffff;
         border: 1px #2c2c2c solid;
         border-radius: 4px;
+        padding: 7px;
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         box-sizing: border-box;
       }
 
+      #comments::placeholder {
+        color: #767676;
+      }
+
+      #actions {
+        display: flex;
+        justify-content: center;
+      }
+
+      .cta-button {
+        color: white;
+        font-size: 14px;
+        border-radius: 4px;
+        height: 30px;
+        font-family: sans-serif;
+        margin: 0;
+      }
+
+      #cancel-button {
+        background-color: ${cancelButtonColor};
+      }
+
+      #submit-button {
+        background-color: ${submitButtonColor};
+        margin-left: 10px;
+      }
+
       .vote-button {
-        background: none;
         background-color: #ffffff;
-        color: inherit;
         border: 1px solid #767676;
         border-radius: 2px;
         padding: 5px;
-        font: inherit;
-        cursor: pointer;
-        outline: inherit;
         width: 25px;
         height: 25px;
         display: flex;
@@ -229,19 +360,19 @@ export class FeatureFeedback extends LitElement {
         filter: ${unselectedColorSvgFilter};
       }
 
-      #upvote.selected {
+      .upvote-button.selected {
         border-color: ${upvoteColor};
       }
 
-      #upvote.selected svg {
+      .upvote-button.selected svg {
         filter: ${upvoteColorSvgFilter};
       }
 
-      #downvote.selected {
+      .downvote-button.selected {
         border-color: ${downvoteColor};
       }
 
-      #downvote.selected svg {
+      .downvote-button.selected svg {
         filter: ${downvoteColorSvgFilter};
       }
     `;

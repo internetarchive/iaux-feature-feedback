@@ -6,7 +6,7 @@ import '../src/feature-feedback';
 export class AppRoot extends LitElement {
   render() {
     return html`
-      <feature-feedback featureId="foo"> </feature-feedback>
+      <feature-feedback featureIdentifier="foo"> </feature-feedback>
       <slot name="recaptcha"></slot>
     `;
   }
