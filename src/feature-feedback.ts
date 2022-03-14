@@ -2,7 +2,15 @@ import {
   RecaptchaManager,
   RecaptchaManagerInterface,
 } from '@internetarchive/recaptcha-manager';
-import { html, css, LitElement, nothing, CSSResultGroup } from 'lit';
+import {
+  html,
+  css,
+  LitElement,
+  nothing,
+  CSSResultGroup,
+  PropertyValues,
+  TemplateResult,
+} from 'lit';
 import { property, customElement, query, state } from 'lit/decorators.js';
 
 import { thumbsUp } from './img/thumb-up';
@@ -24,22 +32,23 @@ export class FeatureFeedback extends LitElement {
 
   @state() private popupPosition = '';
 
+  @state() private processing = false;
+
   @state() private popupTopX = 0;
 
   @state() private popupTopY = 0;
 
   @state() private vote?: Vote;
 
+  @state() private error?: TemplateResult;
+
   @query('#comments') private comments!: HTMLTextAreaElement;
+
+  private boundEscapeListener?: (this: Document, ev: KeyboardEvent) => any;
 
   render() {
     return html`
-      <button
-        id="beta-button"
-        @click=${this.showPopup}
-        @keyup=${this.betaButtonKeyUp}
-        tabindex="0"
-      >
+      <button id="beta-button" @click=${this.showPopup} tabindex="0">
         Beta
         <span class="beta-button-thumb upvote-button ${this.upvoteButtonClass}"
           >${thumbsUp}</span
@@ -54,6 +63,14 @@ export class FeatureFeedback extends LitElement {
     `;
   }
 
+  firstUpdated(): void {
+    this.boundEscapeListener = this.handleEscape.bind(this);
+  }
+
+  updated(changed: PropertyValues): void {
+    if (changed.has('vote') && this.vote) this.error = undefined;
+  }
+
   private async setupRecaptcha() {
     if (this.recaptchaManager) return;
     this.recaptchaManager = await RecaptchaManager.getRecaptchaManager({
@@ -64,18 +81,29 @@ export class FeatureFeedback extends LitElement {
     this.recaptchaManager.setup(element, 0, 'light', 'image');
   }
 
-  private async betaButtonKeyUp(e: KeyboardEvent) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      this.showPopup();
-    }
-  }
-
   private async showPopup() {
     const boundingRect = this.betaButton.getBoundingClientRect();
     this.popupTopX = boundingRect.right - 10;
     this.popupTopY = boundingRect.bottom - 10;
     this.isOpen = true;
+    this.setupEscapeListener();
     await this.setupRecaptcha();
+  }
+
+  private setupEscapeListener() {
+    if (!this.boundEscapeListener) return;
+    document.addEventListener('keyup', this.boundEscapeListener);
+  }
+
+  private removeEscapeListener() {
+    if (!this.boundEscapeListener) return;
+    document.removeEventListener('keyup', this.boundEscapeListener);
+  }
+
+  private handleEscape(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      this.closePopup();
+    }
   }
 
   private get popupTemplate() {
@@ -89,7 +117,7 @@ export class FeatureFeedback extends LitElement {
           id="popup"
           style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
         >
-          <form @submit=${this.submit} id="form">
+          <form @submit=${this.submit} id="form" ?disabled=${this.processing}>
             <div id="prompt">
               <div id="prompt-text">Do you find this feature useful?</div>
               <button
@@ -97,7 +125,9 @@ export class FeatureFeedback extends LitElement {
                   e.preventDefault();
                   this.vote = this.vote === 'up' ? undefined : 'up';
                 }}
-                class="vote-button upvote-button ${this.upvoteButtonClass}"
+                ?disabled=${this.processing}
+                class="vote-button upvote-button ${this
+                  .upvoteButtonClass} ${this.error ? 'error' : ''}"
                 tabindex="0"
               >
                 ${thumbsUp}
@@ -107,7 +137,9 @@ export class FeatureFeedback extends LitElement {
                   e.preventDefault();
                   this.vote = this.vote === 'down' ? undefined : 'down';
                 }}
-                class="vote-button downvote-button ${this.downvoteButtonClass}"
+                ?disabled=${this.processing}
+                class="vote-button downvote-button ${this
+                  .downvoteButtonClass} ${this.error ? 'error' : ''}"
                 tabindex="0"
               >
                 ${thumbsDown}
@@ -118,14 +150,17 @@ export class FeatureFeedback extends LitElement {
                 placeholder="Comments (optional)"
                 id="comments"
                 tabindex="0"
+                ?disabled=${this.processing}
               ></textarea>
             </div>
+            ${this.error ? html`<div id="error">${this.error}</div>` : nothing}
             <div id="actions">
               <button
                 @click=${this.cancel}
                 id="cancel-button"
                 class="cta-button"
                 tabindex="0"
+                ?disabled=${this.processing}
               >
                 Cancel
               </button>
@@ -133,8 +168,9 @@ export class FeatureFeedback extends LitElement {
                 type="submit"
                 id="submit-button"
                 class="cta-button"
-                value="Submit feedback"
+                .value=${this.processing ? 'Submitting...' : 'Submit feedback'}
                 tabindex="0"
+                ?disabled=${this.processing}
               />
             </div>
           </form>
@@ -177,6 +213,7 @@ export class FeatureFeedback extends LitElement {
   }
 
   private closePopup() {
+    this.removeEscapeListener();
     this.isOpen = false;
   }
 
@@ -184,7 +221,12 @@ export class FeatureFeedback extends LitElement {
     e.preventDefault();
 
     if (!this.featureIdentifier) return;
-    await this.setupRecaptcha();
+    if (!this.vote) {
+      this.error = html`Please select a vote.`;
+      return;
+    }
+
+    this.processing = true;
     if (!this.recaptchaManager) return;
     const token = await this.recaptchaManager.execute();
 
@@ -193,7 +235,14 @@ export class FeatureFeedback extends LitElement {
     url.searchParams.append('rating', this.vote!);
     url.searchParams.append('comment', this.comments.value);
     url.searchParams.append('token', token);
-    await fetch(url.href);
+    try {
+      await fetch(url.href);
+      this.closePopup();
+    } catch (err) {
+      this.error = html`There was an error submitting your feedback.<br />Error:
+        ${err instanceof Error ? err.message : err}`;
+    }
+    this.processing = false;
   }
 
   static get styles(): CSSResultGroup {
@@ -246,6 +295,12 @@ export class FeatureFeedback extends LitElement {
         filter: ${unselectedColorSvgFilter};
       }
 
+      #error {
+        color: red;
+        font-size: 14px;
+        text-align: center;
+      }
+
       #popup-background {
         position: fixed;
         top: 0;
@@ -271,6 +326,12 @@ export class FeatureFeedback extends LitElement {
         -moz-appearance: none;
         appearance: none;
         border: none;
+      }
+
+      button:disabled,
+      input[type='submit']:disabled {
+        cursor: default;
+        opacity: 0.5;
       }
 
       #form > div {
@@ -374,6 +435,10 @@ export class FeatureFeedback extends LitElement {
 
       .downvote-button.selected svg {
         filter: ${downvoteColorSvgFilter};
+      }
+
+      .vote-button.error {
+        box-shadow: 0 0 4px red;
       }
     `;
   }
