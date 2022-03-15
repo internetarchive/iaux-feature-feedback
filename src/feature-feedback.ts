@@ -26,6 +26,8 @@ export class FeatureFeedback extends LitElement {
 
   @property({ type: String }) recaptchaSiteKey?: string;
 
+  @property({ type: String }) featureFeedbackServiceUrl?: string;
+
   @query('#beta-button') private betaButton!: HTMLButtonElement;
 
   @query('#popup') private popup?: HTMLDivElement;
@@ -228,10 +230,10 @@ export class FeatureFeedback extends LitElement {
     }
 
     this.processing = true;
-    if (!this.recaptchaManager) return;
+    if (!this.recaptchaManager || !this.featureFeedbackServiceUrl) return;
     const token = await this.recaptchaManager.execute();
 
-    const url = new URL('http://localhost:5000');
+    const url = new URL(this.featureFeedbackServiceUrl);
     url.searchParams.append('featureId', this.featureIdentifier);
     url.searchParams.append('rating', this.vote!);
     url.searchParams.append('comment', this.comments.value);
