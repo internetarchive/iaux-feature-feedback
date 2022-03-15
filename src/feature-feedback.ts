@@ -80,7 +80,13 @@ export class FeatureFeedback extends LitElement {
     this.recaptchaManager = await RecaptchaManager.getRecaptchaManager({
       siteKey: this.recaptchaSiteKey,
     });
-    const element = document.querySelector('#recaptcha') as HTMLDivElement;
+    const elementId = `#recaptcha-${this.featureIdentifier}`;
+    let element: HTMLDivElement | null = document.querySelector(elementId);
+    if (!element) {
+      element = document.createElement('div');
+      element.id = elementId;
+      document.body.appendChild(element);
+    }
     this.recaptchaManager.setup(element, 0, 'light', 'image');
   }
 
