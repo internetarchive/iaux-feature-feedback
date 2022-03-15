@@ -24,6 +24,8 @@ export class FeatureFeedback extends LitElement {
 
   @property({ type: String }) recaptchaManager?: RecaptchaManagerInterface;
 
+  @property({ type: String }) siteKey?: string;
+
   @query('#beta-button') private betaButton!: HTMLButtonElement;
 
   @query('#popup') private popup?: HTMLDivElement;
@@ -72,10 +74,9 @@ export class FeatureFeedback extends LitElement {
   }
 
   private async setupRecaptcha() {
-    if (this.recaptchaManager) return;
+    if (this.recaptchaManager || !this.siteKey) return;
     this.recaptchaManager = await RecaptchaManager.getRecaptchaManager({
-      // don't commit this key to git
-      siteKey: '6LeTUvYUAAAAAPTvW98MaXyS8c6vxk4-9n8DI1ve',
+      siteKey: this.siteKey,
     });
     const element = document.querySelector('#recaptcha') as HTMLDivElement;
     this.recaptchaManager.setup(element, 0, 'light', 'image');
