@@ -85,7 +85,7 @@ export class FeatureFeedback extends LitElement {
     if (!element) {
       element = document.createElement('div');
       element.id = elementId;
-      document.body.appendChild(element);
+      document.body.insertBefore(element, document.body.firstChild);
     }
     this.recaptchaManager.setup(element, 0, 'light', 'image');
   }
