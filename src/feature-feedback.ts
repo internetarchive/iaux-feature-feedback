@@ -85,6 +85,10 @@ export class FeatureFeedback extends LitElement {
     if (!element) {
       element = document.createElement('div');
       element.id = elementId;
+      element.style.position = 'fixed';
+      element.style.top = '50%';
+      element.style.left = '50%';
+      element.style.zIndex = '10';
       document.body.insertBefore(element, document.body.firstChild);
     }
     this.recaptchaManager.setup(element, 0, 'light', 'image');
