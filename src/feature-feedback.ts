@@ -1,8 +1,4 @@
 import {
-  RecaptchaManager,
-  RecaptchaManagerInterface,
-} from '@internetarchive/recaptcha-manager';
-import {
   html,
   css,
   LitElement,
@@ -13,28 +9,32 @@ import {
 } from 'lit';
 import { property, customElement, query, state } from 'lit/decorators.js';
 
+import type {
+  RecaptchaManagerInterface,
+  RecaptchaWidgetInterface,
+} from '@internetarchive/recaptcha-manager';
+import type { FeatureFeedbackServiceInterface } from './feature-feedback-service';
+import type { Vote } from './models';
+
 import { thumbsUp } from './img/thumb-up';
 import { thumbsDown } from './img/thumb-down';
-
-type Vote = 'up' | 'down';
 
 @customElement('feature-feedback')
 export class FeatureFeedback extends LitElement {
   @property({ type: String }) featureIdentifier?: string;
 
+  @property({ type: String }) prompt = 'Do you find this feature useful?';
+
   @property({ type: String }) recaptchaManager?: RecaptchaManagerInterface;
 
-  @property({ type: String }) recaptchaSiteKey?: string;
-
-  @property({ type: String }) featureFeedbackServiceUrl?: string;
+  @property({ type: String })
+  featureFeedbackService?: FeatureFeedbackServiceInterface;
 
   @query('#beta-button') private betaButton!: HTMLButtonElement;
 
   @query('#popup') private popup?: HTMLDivElement;
 
   @state() private isOpen = false;
-
-  @state() private popupPosition = '';
 
   @state() private processing = false;
 
@@ -44,7 +44,11 @@ export class FeatureFeedback extends LitElement {
 
   @state() private vote?: Vote;
 
+  @state() private voteSubmitted = false;
+
   @state() private error?: TemplateResult;
+
+  @state() private recaptchaWidget?: RecaptchaWidgetInterface;
 
   @query('#comments') private comments!: HTMLTextAreaElement;
 
@@ -54,11 +58,16 @@ export class FeatureFeedback extends LitElement {
     return html`
       <button id="beta-button" @click=${this.showPopup} tabindex="0">
         Beta
-        <span class="beta-button-thumb upvote-button ${this.upvoteButtonClass}"
+        <span
+          class="beta-button-thumb upvote-button ${this.voteSubmitted
+            ? this.upvoteButtonClass
+            : ''}"
           >${thumbsUp}</span
         >
         <span
-          class="beta-button-thumb downvote-button ${this.downvoteButtonClass}"
+          class="beta-button-thumb downvote-button ${this.voteSubmitted
+            ? this.downvoteButtonClass
+            : ''}"
           id="beta-button-thumb-down"
           >${thumbsDown}</span
         >
@@ -76,28 +85,34 @@ export class FeatureFeedback extends LitElement {
   }
 
   private async setupRecaptcha() {
-    if (this.recaptchaManager || !this.recaptchaSiteKey) return;
-    this.recaptchaManager = await RecaptchaManager.getRecaptchaManager({
-      siteKey: this.recaptchaSiteKey,
-    });
-    const elementId = `#recaptcha-${this.featureIdentifier}`;
-    let element: HTMLDivElement | null = document.querySelector(elementId);
-    if (!element) {
-      element = document.createElement('div');
-      element.id = elementId;
-      element.style.position = 'fixed';
-      element.style.top = '50%';
-      element.style.left = '50%';
-      element.style.zIndex = '10';
-      document.body.insertBefore(element, document.body.firstChild);
-    }
-    this.recaptchaManager.setup(element, 0, 'light', 'image');
+    if (!this.recaptchaManager) return;
+    this.recaptchaWidget = await this.recaptchaManager.getRecaptchaWidget();
   }
 
   private async showPopup() {
+    if (this.voteSubmitted) return;
+
     const boundingRect = this.betaButton.getBoundingClientRect();
-    this.popupTopX = boundingRect.right - 10;
-    this.popupTopY = boundingRect.bottom - 10;
+    const bodyRect = document.body.getBoundingClientRect();
+    const bodyCenterX = bodyRect.width / 2;
+    const bodyCenterY = bodyRect.height / 2;
+    this.popupTopX = Math.abs(boundingRect.left - bodyCenterX) / 2;
+    this.popupTopY = Math.abs(boundingRect.top - bodyCenterY) / 2; // + boundingRect.height / 2;
+    console.debug(
+      'bodyCenterX',
+      bodyCenterX,
+      'bodyCenterY',
+      bodyCenterY,
+      boundingRect.left - bodyRect.left,
+      boundingRect.top - bodyRect.top,
+      this.popupTopX,
+      this.popupTopY,
+      boundingRect,
+      document.body.getBoundingClientRect()
+    );
+    // const
+    // this.popupTopX = boundingRect.right - 10;
+    // this.popupTopY = boundingRect.bottom - 10;
     this.isOpen = true;
     this.setupEscapeListener();
     await this.setupRecaptcha();
@@ -132,7 +147,7 @@ export class FeatureFeedback extends LitElement {
         >
           <form @submit=${this.submit} id="form" ?disabled=${this.processing}>
             <div id="prompt">
-              <div id="prompt-text">Do you find this feature useful?</div>
+              <div id="prompt-text">${this.prompt}</div>
               <button
                 @click=${(e: Event) => {
                   e.preventDefault();
@@ -233,28 +248,40 @@ export class FeatureFeedback extends LitElement {
   private async submit(e: Event) {
     e.preventDefault();
 
-    if (!this.featureIdentifier) return;
     if (!this.vote) {
       this.error = html`Please select a vote.`;
       return;
     }
 
-    this.processing = true;
-    if (!this.recaptchaManager || !this.featureFeedbackServiceUrl) return;
-    const token = await this.recaptchaManager.execute();
+    if (!this.featureIdentifier) {
+      throw new Error('featureIdentifier is required');
+    }
 
-    const url = new URL(this.featureFeedbackServiceUrl);
-    url.searchParams.append('featureId', this.featureIdentifier);
-    url.searchParams.append('rating', this.vote!);
-    url.searchParams.append('comment', this.comments.value);
-    url.searchParams.append('token', token);
+    if (!this.featureFeedbackService) {
+      throw new Error('featureFeedbackService is required');
+    }
+
+    if (!this.recaptchaWidget) {
+      throw new Error('recaptchaWidget is required');
+    }
+
+    this.processing = true;
+
     try {
-      await fetch(url.href);
+      const token = await this.recaptchaWidget.execute();
+      await this.featureFeedbackService.submitFeedback({
+        featureIdentifier: this.featureIdentifier,
+        vote: this.vote,
+        comments: this.comments.value,
+        recaptchaToken: token,
+      });
       this.closePopup();
     } catch (err) {
       this.error = html`There was an error submitting your feedback.<br />Error:
         ${err instanceof Error ? err.message : err}`;
     }
+
+    this.voteSubmitted = true;
     this.processing = false;
   }
 
@@ -323,6 +350,7 @@ export class FeatureFeedback extends LitElement {
         height: 100%;
         z-index: 1;
         background-color: ${popupBlockerColor};
+        overflow: hidden;
       }
 
       #popup {
