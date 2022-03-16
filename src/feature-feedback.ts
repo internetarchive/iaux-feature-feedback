@@ -93,18 +93,19 @@ export class FeatureFeedback extends LitElement {
     if (this.voteSubmitted) return;
 
     const boundingRect = this.betaButton.getBoundingClientRect();
-    const bodyRect = document.body.getBoundingClientRect();
-    const bodyCenterX = bodyRect.width / 2;
-    const bodyCenterY = bodyRect.height / 2;
-    this.popupTopX = Math.abs(boundingRect.left - bodyCenterX) / 2;
-    this.popupTopY = Math.abs(boundingRect.top - bodyCenterY) / 2; // + boundingRect.height / 2;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const windowCenterX = windowWidth / 2;
+    const windowCenterY = windowHeight / 2;
+    this.popupTopX = Math.abs(boundingRect.left - windowCenterX) / 2;
+    this.popupTopY = Math.abs(boundingRect.top - windowCenterY) / 2; // + boundingRect.height / 2;
     console.debug(
       'bodyCenterX',
-      bodyCenterX,
+      windowCenterX,
       'bodyCenterY',
-      bodyCenterY,
-      boundingRect.left - bodyRect.left,
-      boundingRect.top - bodyRect.top,
+      windowCenterY,
+      boundingRect.left - windowCenterX,
+      boundingRect.top - windowCenterY,
       this.popupTopX,
       this.popupTopY,
       boundingRect,
@@ -357,10 +358,11 @@ export class FeatureFeedback extends LitElement {
         position: absolute;
         padding: 10px;
         background-color: ${popupBackgroundColor};
-        border: 2px ${popupBorderColor} solid;
+        border: 1px ${popupBorderColor} solid;
         border-radius: 5px;
-        box-shadow: 1px 1px 2px #000000;
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         z-index: 2;
+        max-width: 300px;
       }
 
       button,
