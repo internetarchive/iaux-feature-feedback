@@ -48,6 +48,8 @@ export class FeatureFeedback extends LitElement {
 
   @state() private error?: TemplateResult;
 
+  @state() private voteNeedsChoosing = false;
+
   @state() private recaptchaWidget?: RecaptchaWidgetInterface;
 
   @query('#comments') private comments!: HTMLTextAreaElement;
@@ -81,7 +83,10 @@ export class FeatureFeedback extends LitElement {
   }
 
   updated(changed: PropertyValues): void {
-    if (changed.has('vote') && this.vote) this.error = undefined;
+    if (changed.has('vote') && this.vote) {
+      this.error = undefined;
+      this.voteNeedsChoosing = false;
+    }
   }
 
   private async setupRecaptcha() {
@@ -153,7 +158,7 @@ export class FeatureFeedback extends LitElement {
                 }}
                 ?disabled=${this.processing}
                 class="vote-button upvote-button ${this
-                  .upvoteButtonClass} ${this.error ? 'error' : ''}"
+                  .upvoteButtonClass} ${this.voteNeedsChoosing ? 'error' : ''}"
                 tabindex="0"
               >
                 ${thumbsUp}
@@ -165,7 +170,9 @@ export class FeatureFeedback extends LitElement {
                 }}
                 ?disabled=${this.processing}
                 class="vote-button downvote-button ${this
-                  .downvoteButtonClass} ${this.error ? 'error' : ''}"
+                  .downvoteButtonClass} ${this.voteNeedsChoosing
+                  ? 'error'
+                  : ''}"
                 tabindex="0"
               >
                 ${thumbsDown}
@@ -247,6 +254,7 @@ export class FeatureFeedback extends LitElement {
     e.preventDefault();
 
     if (!this.vote) {
+      this.voteNeedsChoosing = true;
       this.error = html`Please select a vote.`;
       return;
     }
