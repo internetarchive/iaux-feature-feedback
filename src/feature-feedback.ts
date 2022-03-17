@@ -119,6 +119,7 @@ export class FeatureFeedback extends LitElement {
       this.popupTopY = betaRect.top + 10 - popupRect.height;
     }
 
+    this.stopBodyScrolling();
     this.isOpen = true;
     this.setupEscapeListener();
     await this.setupRecaptcha();
@@ -138,6 +139,20 @@ export class FeatureFeedback extends LitElement {
     if (e.key === 'Escape') {
       this.closePopup();
     }
+  }
+
+  private stopBodyScrolling() {
+    const style = document.createElement('style');
+    style.id = 'feature-feedback-stop-body-scrolling';
+    style.textContent = 'body { overflow: hidden; }';
+    document.head.appendChild(style);
+  }
+
+  private startBodyScrolling() {
+    const style = document.getElementById(
+      'feature-feedback-stop-body-scrolling'
+    );
+    style?.remove();
   }
 
   private get popupTemplate() {
@@ -250,6 +265,7 @@ export class FeatureFeedback extends LitElement {
   }
 
   private closePopup() {
+    this.startBodyScrolling();
     this.removeEscapeListener();
     this.isOpen = false;
   }
