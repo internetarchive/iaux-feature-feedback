@@ -316,7 +316,8 @@ export class FeatureFeedback extends LitElement {
 
     const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #F5F5F7)`;
 
-    const promptFont = css`var(--featureFeedbackPromptFont, bold 14px "Helvetica Neue bold", sans-serif)`;
+    const promptFontWeight = css`var(--featureFeedbackPromptFontWeight, bold)`;
+    const promptFontSize = css`var(--featureFeedbackPromptFontSize, 14px)`;
 
     const defaultColor = css`var(--defaultColor, ${darkGrayColor});`;
     const defaultColorSvgFilter = css`var(--defaultColorSvgFilter, ${darkGrayColorSvgFilter});`;
@@ -388,6 +389,13 @@ export class FeatureFeedback extends LitElement {
       }
 
       button,
+      input,
+      a,
+      textarea {
+        font-family: inherit;
+      }
+
+      button,
       input[type='submit'] {
         background: none;
         cursor: pointer;
@@ -414,7 +422,8 @@ export class FeatureFeedback extends LitElement {
       #prompt {
         display: flex;
         align-items: center;
-        font: ${promptFont};
+        font-size: ${promptFontSize};
+        font-weight: ${promptFontWeight};
       }
 
       #comments {
@@ -443,7 +452,6 @@ export class FeatureFeedback extends LitElement {
         font-size: 14px;
         border-radius: 4px;
         height: 30px;
-        font-family: sans-serif;
         margin: 0;
       }
 
