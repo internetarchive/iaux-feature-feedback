@@ -444,6 +444,10 @@ export class FeatureFeedback extends LitElement {
         font-weight: ${promptFontWeight};
       }
 
+      #prompt-text {
+        text-align: left;
+      }
+
       #comments {
         width: 100%;
         height: 50px;
