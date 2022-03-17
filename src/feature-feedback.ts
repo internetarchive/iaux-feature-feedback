@@ -267,13 +267,18 @@ export class FeatureFeedback extends LitElement {
 
     try {
       const token = await this.recaptchaWidget.execute();
-      await this.featureFeedbackService.submitFeedback({
+      const response = await this.featureFeedbackService.submitFeedback({
         featureIdentifier: this.featureIdentifier,
         vote: this.vote,
         comments: this.comments.value,
         recaptchaToken: token,
       });
-      this.closePopup();
+
+      if (response.success) {
+        this.closePopup();
+      } else {
+        this.error = html`There was an error submitting your feedback.`;
+      }
     } catch (err) {
       this.error = html`There was an error submitting your feedback.<br />Error:
         ${err instanceof Error ? err.message : err}`;
