@@ -259,7 +259,8 @@ export class FeatureFeedback extends LitElement {
     this.closePopup();
   }
 
-  private cancel() {
+  private cancel(e: Event) {
+    e.preventDefault();
     this.vote = undefined;
     this.closePopup();
   }
