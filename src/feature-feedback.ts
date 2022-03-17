@@ -287,6 +287,7 @@ export class FeatureFeedback extends LitElement {
       });
 
       if (response.success) {
+        this.voteSubmitted = true;
         this.closePopup();
       } else {
         this.error = html`There was an error submitting your feedback.`;
@@ -296,7 +297,6 @@ export class FeatureFeedback extends LitElement {
         ${err instanceof Error ? err.message : err}`;
     }
 
-    this.voteSubmitted = true;
     this.processing = false;
   }
 
@@ -356,6 +356,7 @@ export class FeatureFeedback extends LitElement {
         color: red;
         font-size: 14px;
         text-align: center;
+        font-weight: bold;
       }
 
       #popup-background {
