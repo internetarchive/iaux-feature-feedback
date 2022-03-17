@@ -22,15 +22,14 @@ export class AppRoot extends LitElement {
         duis do minim sint occaecat reprehenderit esse sit aliqua.
       </p>
 
-      <div id="first">
-        <feature-feedback
-          .recaptchaManager=${this.recaptchaManager}
-          .featureFeedbackService=${this.featureFeedbackService}
-          .featureIdentifier=${'demo-feature'}
-          .prompt=${'Do you find foos to be better than bars?'}
-        >
-        </feature-feedback>
-      </div>
+      <feature-feedback
+        class="right"
+        .recaptchaManager=${this.recaptchaManager}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .featureIdentifier=${'demo-feature'}
+        .prompt=${'Do you find foos to be better than bars?'}
+      >
+      </feature-feedback>
       <p>
         Et esse sunt officia velit. Excepteur non sint irure non consectetur
         labore deserunt aliqua elit. Commodo cupidatat tempor minim
@@ -64,6 +63,14 @@ export class AppRoot extends LitElement {
         sunt voluptate do. Ad duis id qui dolor.
       </p>
 
+      <feature-feedback
+        class="right"
+        .recaptchaManager=${this.recaptchaManager}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .featureIdentifier=${'demo-feature'}
+      >
+      </feature-feedback>
+
       <p>
         Nulla reprehenderit et consequat cupidatat reprehenderit pariatur anim
         aute nulla. Sunt labore mollit nulla irure laboris sunt occaecat. Ea
@@ -81,7 +88,7 @@ export class AppRoot extends LitElement {
       display: block;
     }
 
-    #first {
+    .right {
       float: right;
     }
   `;

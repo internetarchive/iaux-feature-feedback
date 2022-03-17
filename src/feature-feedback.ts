@@ -32,7 +32,7 @@ export class FeatureFeedback extends LitElement {
 
   @query('#beta-button') private betaButton!: HTMLButtonElement;
 
-  @query('#popup') private popup?: HTMLDivElement;
+  @query('#popup') private popup!: HTMLDivElement;
 
   @state() private isOpen = false;
 
@@ -72,7 +72,7 @@ export class FeatureFeedback extends LitElement {
           >${thumbsDown}</span
         >
       </button>
-      ${this.isOpen ? this.popupTemplate : nothing}
+      ${this.popupTemplate}
     `;
   }
 
@@ -92,28 +92,24 @@ export class FeatureFeedback extends LitElement {
   private async showPopup() {
     if (this.voteSubmitted) return;
 
-    const boundingRect = this.betaButton.getBoundingClientRect();
+    const betaRect = this.betaButton.getBoundingClientRect();
+    const popupRect = this.popup.getBoundingClientRect();
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const windowCenterX = windowWidth / 2;
     const windowCenterY = windowHeight / 2;
-    this.popupTopX = Math.abs(boundingRect.left - windowCenterX) / 2;
-    this.popupTopY = Math.abs(boundingRect.top - windowCenterY) / 2; // + boundingRect.height / 2;
-    console.debug(
-      'bodyCenterX',
-      windowCenterX,
-      'bodyCenterY',
-      windowCenterY,
-      boundingRect.left - windowCenterX,
-      boundingRect.top - windowCenterY,
-      this.popupTopX,
-      this.popupTopY,
-      boundingRect,
-      document.body.getBoundingClientRect()
-    );
-    // const
-    // this.popupTopX = boundingRect.right - 10;
-    // this.popupTopY = boundingRect.bottom - 10;
+    if (betaRect.left < windowCenterX) {
+      this.popupTopX = betaRect.right - 10;
+    } else {
+      this.popupTopX = betaRect.left + 10 - popupRect.width;
+    }
+
+    if (betaRect.top < windowCenterY) {
+      this.popupTopY = betaRect.bottom - 10;
+    } else {
+      this.popupTopY = betaRect.top + 10 - popupRect.height;
+    }
+
     this.isOpen = true;
     this.setupEscapeListener();
     await this.setupRecaptcha();
@@ -139,6 +135,7 @@ export class FeatureFeedback extends LitElement {
     return html`
       <div
         id="popup-background"
+        class=${this.isOpen ? 'open' : 'closed'}
         @click=${this.backgroundClicked}
         @keyup=${this.backgroundClicked}
       >
@@ -352,6 +349,12 @@ export class FeatureFeedback extends LitElement {
         z-index: 1;
         background-color: ${popupBlockerColor};
         overflow: hidden;
+      }
+
+      #popup-background.closed {
+        visibility: hidden;
+        top: -100%;
+        left: -100%;
       }
 
       #popup {
