@@ -322,6 +322,9 @@ export class FeatureFeedback extends LitElement {
     const darkGrayColor = css`var(--featureFeedbackDarkGrayColor, #767676)`;
     const darkGrayColorSvgFilter = css`var(--defaultColorSvgFilter, invert(52%) sepia(0%) saturate(1%) hue-rotate(331deg) brightness(87%) contrast(89%))`;
 
+    const backdropZindex = css`var(--featureFeedbackBackdropZindex, 5)`;
+    const modalZindex = css`var(--featureFeedbackModalZindex, 6)`;
+
     const popupBorderColor = css`var(--featureFeedbackPopupBorderColor, ${blueColor})`;
     const submitButtonColor = css`var(--featureFeedbackSubmitButtonColor, ${blueColor})`;
     const betaButtonBorderColor = css`var(--featureFeedbackBetaButtonBorderColor, ${blueColor})`;
@@ -382,7 +385,7 @@ export class FeatureFeedback extends LitElement {
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 1;
+        z-index: ${backdropZindex};
         background-color: ${popupBlockerColor};
         overflow: hidden;
       }
@@ -400,7 +403,7 @@ export class FeatureFeedback extends LitElement {
         border: 1px ${popupBorderColor} solid;
         border-radius: 5px;
         box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        z-index: 2;
+        z-index: ${modalZindex};
         max-width: 300px;
         margin-left: 10px;
         margin-right: 10px;
