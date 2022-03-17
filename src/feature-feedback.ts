@@ -104,9 +104,13 @@ export class FeatureFeedback extends LitElement {
     const windowCenterX = windowWidth / 2;
     const windowCenterY = windowHeight / 2;
     if (betaRect.left < windowCenterX) {
-      this.popupTopX = betaRect.right - 10;
+      this.popupTopX = betaRect.right - 20;
     } else {
-      this.popupTopX = betaRect.left + 10 - popupRect.width;
+      this.popupTopX = betaRect.left + 20 - popupRect.width;
+    }
+    this.popupTopX = Math.max(0, this.popupTopX);
+    if (this.popupTopX + popupRect.width > windowWidth) {
+      this.popupTopX = windowWidth - popupRect.width;
     }
 
     if (betaRect.top < windowCenterY) {
@@ -379,6 +383,8 @@ export class FeatureFeedback extends LitElement {
         box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         z-index: 2;
         max-width: 300px;
+        margin-left: 10px;
+        margin-right: 10px;
       }
 
       button,
