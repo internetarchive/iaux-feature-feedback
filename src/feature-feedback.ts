@@ -67,6 +67,8 @@ export class FeatureFeedback
 
   private boundEscapeListener?: (this: Document, ev: KeyboardEvent) => any;
 
+  private boundScrollListener?: (this: Document, ev: Event) => any;
+
   render() {
     return html`
       <button id="beta-button" @click=${this.showPopup} tabindex="0">
@@ -91,6 +93,7 @@ export class FeatureFeedback
 
   firstUpdated(): void {
     this.boundEscapeListener = this.handleEscape.bind(this);
+    this.boundScrollListener = this.handleScroll.bind(this);
   }
 
   updated(changed: PropertyValues): void {
@@ -103,11 +106,15 @@ export class FeatureFeedback
         'resizeObserver'
       ) as SharedResizeObserverInterface;
       this.disconnectResizeObserver(oldObserver);
-      this.setupResizeObserver();
     }
   }
 
   handleResize() {
+    if (!this.isOpen) return;
+    this.positionPopup();
+  }
+
+  handleScroll() {
     if (!this.isOpen) return;
     this.positionPopup();
   }
@@ -124,6 +131,10 @@ export class FeatureFeedback
       handler: this,
       target: this.resizingElement,
     });
+  }
+
+  private setupScrollObserver() {
+    document.addEventListener('scroll', this.boundScrollListener!);
   }
 
   private setupResizeObserver() {
@@ -151,11 +162,19 @@ export class FeatureFeedback
     if (this.voteSubmitted) return;
 
     this.resetState();
-    this.positionPopup();
-    this.stopBodyScrolling();
-    this.isOpen = true;
+    this.setupResizeObserver();
+    this.setupScrollObserver();
     this.setupEscapeListener();
+    this.positionPopup();
+    this.isOpen = true;
     await this.setupRecaptcha();
+  }
+
+  private closePopup() {
+    this.disconnectResizeObserver();
+    this.stopScrollObserver();
+    this.removeEscapeListener();
+    this.isOpen = false;
   }
 
   private positionPopup() {
@@ -198,18 +217,8 @@ export class FeatureFeedback
     }
   }
 
-  private stopBodyScrolling() {
-    const style = document.createElement('style');
-    style.id = 'feature-feedback-stop-body-scrolling';
-    style.textContent = 'body { overflow: hidden; }';
-    document.head.appendChild(style);
-  }
-
-  private startBodyScrolling() {
-    const style = document.getElementById(
-      'feature-feedback-stop-body-scrolling'
-    );
-    style?.remove();
+  private stopScrollObserver() {
+    document.removeEventListener('scroll', this.boundScrollListener!);
   }
 
   private get popupTemplate() {
@@ -320,12 +329,6 @@ export class FeatureFeedback
     e.preventDefault();
     this.vote = undefined;
     this.closePopup();
-  }
-
-  private closePopup() {
-    this.startBodyScrolling();
-    this.removeEscapeListener();
-    this.isOpen = false;
   }
 
   private async submit(e: Event) {
