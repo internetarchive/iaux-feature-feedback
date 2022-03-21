@@ -25,6 +25,8 @@ export class FeatureFeedback extends LitElement {
 
   @property({ type: String }) prompt = 'Do you find this feature useful?';
 
+  @property({ type: String }) buttonText = 'Beta';
+
   @property({ type: String }) recaptchaManager?: RecaptchaManagerInterface;
 
   @property({ type: String })
@@ -59,7 +61,7 @@ export class FeatureFeedback extends LitElement {
   render() {
     return html`
       <button id="beta-button" @click=${this.showPopup} tabindex="0">
-        Beta
+        ${this.buttonText}
         <span
           class="beta-button-thumb upvote-button ${this.voteSubmitted
             ? this.upvoteButtonClass
@@ -94,8 +96,18 @@ export class FeatureFeedback extends LitElement {
     this.recaptchaWidget = await this.recaptchaManager.getRecaptchaWidget();
   }
 
+  private resetState() {
+    this.vote = undefined;
+    this.voteSubmitted = false;
+    this.error = undefined;
+    this.voteNeedsChoosing = false;
+    this.comments.value = '';
+  }
+
   private async showPopup() {
     if (this.voteSubmitted) return;
+
+    this.resetState();
 
     const betaRect = this.betaButton.getBoundingClientRect();
     const popupRect = this.popup.getBoundingClientRect();
@@ -461,6 +473,7 @@ export class FeatureFeedback extends LitElement {
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         box-sizing: border-box;
+        resize: none;
       }
 
       #comments::placeholder {
