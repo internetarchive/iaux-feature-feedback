@@ -1,4 +1,5 @@
 import { RecaptchaManager } from '@internetarchive/recaptcha-manager';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { html, css, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import '../src/feature-feedback';
@@ -14,6 +15,8 @@ export class AppRoot extends LitElement {
     serviceUrl: 'https://services-feature-feedback-service.dev.archive.org',
   });
 
+  resizeObserver = new SharedResizeObserver();
+
   render() {
     return html`
       <p>
@@ -26,6 +29,7 @@ export class AppRoot extends LitElement {
         class="right"
         .recaptchaManager=${this.recaptchaManager}
         .featureFeedbackService=${this.featureFeedbackService}
+        .resizeObserver=${this.resizeObserver}
         .featureIdentifier=${'demo-feature'}
         .prompt=${'Do you find foos to be better than bars?'}
       >
@@ -42,6 +46,7 @@ export class AppRoot extends LitElement {
       <feature-feedback
         .recaptchaManager=${this.recaptchaManager}
         .featureFeedbackService=${this.featureFeedbackService}
+        .resizeObserver=${this.resizeObserver}
         .featureIdentifier=${'demo-feature'}
       >
       </feature-feedback>
@@ -67,6 +72,7 @@ export class AppRoot extends LitElement {
         class="right"
         .recaptchaManager=${this.recaptchaManager}
         .featureFeedbackService=${this.featureFeedbackService}
+        .resizeObserver=${this.resizeObserver}
         .featureIdentifier=${'demo-feature'}
       >
       </feature-feedback>

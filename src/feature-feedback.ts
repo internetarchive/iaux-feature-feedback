@@ -10,6 +10,10 @@ import {
 import { property, customElement, query, state } from 'lit/decorators.js';
 
 import type {
+  SharedResizeObserverInterface,
+  SharedResizeObserverResizeHandlerInterface,
+} from '@internetarchive/shared-resize-observer';
+import type {
   RecaptchaManagerInterface,
   RecaptchaWidgetInterface,
 } from '@internetarchive/recaptcha-manager';
@@ -20,16 +24,21 @@ import { thumbsUp } from './img/thumb-up';
 import { thumbsDown } from './img/thumb-down';
 
 @customElement('feature-feedback')
-export class FeatureFeedback extends LitElement {
+export class FeatureFeedback
+  extends LitElement
+  implements SharedResizeObserverResizeHandlerInterface
+{
   @property({ type: String }) featureIdentifier?: string;
 
   @property({ type: String }) prompt = 'Do you find this feature useful?';
 
   @property({ type: String }) buttonText = 'Beta';
 
-  @property({ type: String }) recaptchaManager?: RecaptchaManagerInterface;
+  @property({ type: Object }) recaptchaManager?: RecaptchaManagerInterface;
 
-  @property({ type: String })
+  @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
+
+  @property({ type: Object })
   featureFeedbackService?: FeatureFeedbackServiceInterface;
 
   @query('#beta-button') private betaButton!: HTMLButtonElement;
@@ -89,6 +98,40 @@ export class FeatureFeedback extends LitElement {
       this.error = undefined;
       this.voteNeedsChoosing = false;
     }
+    if (changed.has('resizeObserver')) {
+      const oldObserver = changed.get(
+        'resizeObserver'
+      ) as SharedResizeObserverInterface;
+      this.disconnectResizeObserver(oldObserver);
+      this.setupResizeObserver();
+    }
+  }
+
+  handleResize() {
+    if (!this.isOpen) return;
+    this.positionPopup();
+  }
+
+  disconnectedCallback(): void {
+    this.removeEscapeListener();
+    this.disconnectResizeObserver(this.resizeObserver);
+  }
+
+  private resizingElement = document.body;
+
+  private disconnectResizeObserver(observer?: SharedResizeObserverInterface) {
+    observer?.removeObserver({
+      handler: this,
+      target: this.resizingElement,
+    });
+  }
+
+  private setupResizeObserver() {
+    if (!this.resizeObserver) return;
+    this.resizeObserver.addObserver({
+      handler: this,
+      target: this.resizingElement,
+    });
   }
 
   private async setupRecaptcha() {
@@ -108,7 +151,14 @@ export class FeatureFeedback extends LitElement {
     if (this.voteSubmitted) return;
 
     this.resetState();
+    this.positionPopup();
+    this.stopBodyScrolling();
+    this.isOpen = true;
+    this.setupEscapeListener();
+    await this.setupRecaptcha();
+  }
 
+  private positionPopup() {
     const betaRect = this.betaButton.getBoundingClientRect();
     const popupRect = this.popup.getBoundingClientRect();
     const windowWidth = window.innerWidth;
@@ -130,11 +180,6 @@ export class FeatureFeedback extends LitElement {
     } else {
       this.popupTopY = betaRect.top + 10 - popupRect.height;
     }
-
-    this.stopBodyScrolling();
-    this.isOpen = true;
-    this.setupEscapeListener();
-    await this.setupRecaptcha();
   }
 
   private setupEscapeListener() {

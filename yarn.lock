@@ -130,6 +130,11 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
+"@internetarchive/shared-resize-observer@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/shared-resize-observer/-/shared-resize-observer-0.2.0.tgz#afe51f7dc9507ac6cf7be8966a49e2a4c6c25ff3"
+  integrity sha512-E5Jh6rX03usPkihB/lnGpoL3qedE84NLRHxuAEGrlwC0zyQ7xTr6NNQWwKBDzG1OBcCrUJXIWaQuJdjqo+og1Q==
+
 "@lit/reactive-element@^1.0.0":
   version "1.0.2"
   resolved "https://registry.npmjs.org/@lit/reactive-element/-/reactive-element-1.0.2.tgz"
