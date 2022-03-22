@@ -8,11 +8,11 @@ import { FeatureFeedbackService } from '../src/feature-feedback-service';
 @customElement('app-root')
 export class AppRoot extends LitElement {
   recaptchaManager = new RecaptchaManager({
-    defaultSiteKey: '6LeTUvYUAAAAAPTvW98MaXyS8c6vxk4-9n8DI1ve',
+    defaultSiteKey: '',
   });
 
   featureFeedbackService = new FeatureFeedbackService({
-    serviceUrl: 'https://services-feature-feedback-service.dev.archive.org',
+    serviceUrl: 'http://local.archive.org:5000',
   });
 
   resizeObserver = new SharedResizeObserver();

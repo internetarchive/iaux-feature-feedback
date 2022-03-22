@@ -1,20 +1,44 @@
-![Build Status](https://github.com/internetarchive/iaux-typescript-wc-template/actions/workflows/ci.yml/badge.svg)
+![Build Status](https://github.com/internetarchive/iaux-feature-feedback/actions/workflows/ci.yml/badge.svg)
 
-# Internet Archive Typescript WebComponent Template
+# Internet Archive Feature Feedback Component
 
-This is a base template for creating Typescript WebComponents. It is based off of the [Open WebComponents generator](https://open-wc.org/docs/development/generator/) with some IA-specific customizations and some development niceities.
+This is a widget that lets us collect feedback on features that we release. Written in LitElement.
+
+![Feature Feedback](/assets/screenshot.png "Screenshot")
+
+
+## Installation
+
+```shell
+> npm i @internetarchive/feature-feedback
+```
 
 ## Usage
 
-1. Click the "Use this Template" button in GitHub to create a new repository based on this one.
-2. Clone your new repo and update the things below:
+```ts
+import { RecaptchaManager } from '@internetarchive/recaptcha-manager';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
+import { FeatureFeedbackService } from '@internetarchive/feature-feedback';
+import '@internetarchive/feature-feedback';
 
-### Things to update in your copy
-1. Remove this section
-2. Search for the strings `your-webcomponent` and `FeatureFeedback` and those are most of the spots that need to be updated.
-3. `README.md` (this file). Update the readme in general, but also the badge URLs
-4. `package.json` Update the name and description
-5. Rename the `your-webcomponent.ts` and its associated `.test` file
+const recaptchaManager = new RecaptchaManager({
+  defaultSiteKey: '',
+});
+const featureFeedbackService = new FeatureFeedbackService({
+  serviceUrl: 'http://local.archive.org:5000',
+});
+const resizeObserver = new SharedResizeObserver();
+
+html`
+  <feature-feedback
+    .recaptchaManager=${recaptchaManager}
+    .featureFeedbackService=${featureFeedbackService}
+    .resizeObserver=${resizeObserver}
+    .featureIdentifier=${'demo-feature'}
+    .prompt=${'Do you find foos to be better than bars?'}
+  ></feature-feedback>`;
+```
+
 
 ## Local Demo with `web-dev-server`
 ```bash
