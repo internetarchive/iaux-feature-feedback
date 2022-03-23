@@ -117,13 +117,13 @@
   dependencies:
     nanoevents "^6.0.2"
 
-"@internetarchive/recaptcha-manager@0.0.1-alpha.4":
-  version "0.0.1-alpha.4"
-  resolved "https://registry.yarnpkg.com/@internetarchive/recaptcha-manager/-/recaptcha-manager-0.0.1-alpha.4.tgz#12d97eae66b3fee72c9ee0f946de7ad2d6af8c9a"
-  integrity sha512-jpvs+Z+VDHE0x3QNoSnfpyu9Eyjf33FKIH5AQ99CCeNuZudyZXDQpDO7PB2lqhf9sKDpsknx7nH10GwEIzPzIw==
+"@internetarchive/recaptcha-manager@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/recaptcha-manager/-/recaptcha-manager-0.1.0.tgz#6e0b09103dc831eba900d0353dcba1b2a77eda22"
+  integrity sha512-0mMa0Nvh/LzCLNetWLrwkG1v50VFFbPCC1PFM7pAlcEdAe6v3KU42ie6SHya9ecTY4S1ELTUr3QudsbdlSfIOg==
   dependencies:
     "@internetarchive/lazy-loader-service" "^0.2.0"
-    "@types/grecaptcha" "^3.0.3"
+    "@types/grecaptcha" "^2"
 
 "@internetarchive/result-type@^0.0.1":
   version "0.0.1"
@@ -389,10 +389,10 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/grecaptcha@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/@types/grecaptcha/-/grecaptcha-3.0.3.tgz"
-  integrity sha512-osLqWRzsRsDtCfiCl1lbtUY8ANGCQsG/hhht3E7g1pVT7fD5SXgAg53S2grKjjSkXcm0fvMDbhUeL9NyAJvzGQ==
+"@types/grecaptcha@^2":
+  version "2.0.36"
+  resolved "https://registry.yarnpkg.com/@types/grecaptcha/-/grecaptcha-2.0.36.tgz#c5eaf271ac8a170f073f85aa2e28f2ca3b61df40"
+  integrity sha512-SfzcAJPls94/Lz1FznWe6Vm9NLkakhGmk3EO7g2QdkDDR2OU4FH63YILnDpGIU6l7gPnsf5WQ81Kr05JOYAlZw==
 
 "@types/http-assert@*":
   version "1.5.3"
