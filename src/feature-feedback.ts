@@ -555,6 +555,10 @@ export class FeatureFeedback
         font-weight: ${promptFontWeight};
       }
 
+      #prompt > label {
+        flex: none;
+      }
+
       #prompt-text {
         text-align: left;
       }
