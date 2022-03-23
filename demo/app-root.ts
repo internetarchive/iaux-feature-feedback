@@ -32,6 +32,7 @@ export class AppRoot extends LitElement {
         .resizeObserver=${this.resizeObserver}
         .featureIdentifier=${'demo-feature'}
         .prompt=${'Do you find foos to be better than bars?'}
+        disabled
       >
       </feature-feedback>
       <p>

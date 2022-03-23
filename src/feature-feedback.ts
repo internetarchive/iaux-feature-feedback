@@ -38,6 +38,8 @@ export class FeatureFeedback
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
+  @property({ type: Boolean }) disabled?: boolean;
+
   @property({ type: Object })
   featureFeedbackService?: FeatureFeedbackServiceInterface;
 
@@ -71,8 +73,13 @@ export class FeatureFeedback
 
   render() {
     return html`
-      <button id="beta-button" @click=${this.showPopup} tabindex="0">
-        ${this.buttonText}
+      <button
+        id="beta-button"
+        @click=${this.showPopup}
+        tabindex="0"
+        ?disabled=${this.disabled}
+      >
+        <span id="button-text">${this.buttonText}</span>
         <span
           class="beta-button-thumb upvote-button ${this.voteSubmitted
             ? this.upvoteButtonClass

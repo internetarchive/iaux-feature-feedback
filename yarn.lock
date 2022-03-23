@@ -117,10 +117,10 @@
   dependencies:
     nanoevents "^6.0.2"
 
-"@internetarchive/recaptcha-manager@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/recaptcha-manager/-/recaptcha-manager-0.1.0.tgz#6e0b09103dc831eba900d0353dcba1b2a77eda22"
-  integrity sha512-0mMa0Nvh/LzCLNetWLrwkG1v50VFFbPCC1PFM7pAlcEdAe6v3KU42ie6SHya9ecTY4S1ELTUr3QudsbdlSfIOg==
+"@internetarchive/recaptcha-manager@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/recaptcha-manager/-/recaptcha-manager-0.1.1.tgz#201a6fbf64f9b9e0878767ef93a031df16cd3d98"
+  integrity sha512-+ENMfFm/yqAr6wXji7SZEwEywwvfLazU7KnWkCcHpQU0uwbb//OJ5Lag2tv2QtU7fsrgirFBcOth833HaNcynw==
   dependencies:
     "@internetarchive/lazy-loader-service" "^0.2.0"
     "@types/grecaptcha" "^2"
