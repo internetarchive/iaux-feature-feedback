@@ -65,9 +65,9 @@ export class FeatureFeedback
 
   @query('#comments') private comments!: HTMLTextAreaElement;
 
-  private boundEscapeListener?: (this: Document, ev: KeyboardEvent) => any;
+  private boundEscapeListener!: (this: Document, ev: KeyboardEvent) => any;
 
-  private boundScrollListener?: (this: Document, ev: Event) => any;
+  private boundScrollListener!: (this: Document, ev: Event) => any;
 
   render() {
     return html`
@@ -131,10 +131,6 @@ export class FeatureFeedback
       handler: this,
       target: this.resizingElement,
     });
-  }
-
-  private setupScrollObserver() {
-    document.addEventListener('scroll', this.boundScrollListener!);
   }
 
   private setupResizeObserver() {
@@ -201,24 +197,26 @@ export class FeatureFeedback
     }
   }
 
-  private setupEscapeListener() {
-    if (!this.boundEscapeListener) return;
-    document.addEventListener('keyup', this.boundEscapeListener);
-  }
-
-  private removeEscapeListener() {
-    if (!this.boundEscapeListener) return;
-    document.removeEventListener('keyup', this.boundEscapeListener);
-  }
-
   private handleEscape(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       this.closePopup();
     }
   }
 
+  private setupEscapeListener() {
+    document.addEventListener('keyup', this.boundEscapeListener);
+  }
+
+  private removeEscapeListener() {
+    document.removeEventListener('keyup', this.boundEscapeListener);
+  }
+
+  private setupScrollObserver() {
+    document.addEventListener('scroll', this.boundScrollListener);
+  }
+
   private stopScrollObserver() {
-    document.removeEventListener('scroll', this.boundScrollListener!);
+    document.removeEventListener('scroll', this.boundScrollListener);
   }
 
   private get popupTemplate() {
@@ -236,32 +234,43 @@ export class FeatureFeedback
           <form @submit=${this.submit} id="form" ?disabled=${this.processing}>
             <div id="prompt">
               <div id="prompt-text">${this.prompt}</div>
-              <button
-                @click=${(e: Event) => {
-                  e.preventDefault();
-                  this.vote = this.vote === 'up' ? undefined : 'up';
-                }}
-                ?disabled=${this.processing}
+              <label
+                tabindex="0"
+                role="button"
+                ?aria-pressed=${this.upvoteSelected}
+                @click=${this.upvoteButtonSelected}
+                @keyup=${this.upvoteKeypressed}
                 class="vote-button upvote-button ${this
-                  .upvoteButtonClass} ${this.voteNeedsChoosing ? 'error' : ''}"
-                tabindex="0"
+                  .upvoteButtonClass} ${this.chooseVoteErrorClass}"
               >
+                <input
+                  type="radio"
+                  name="vote"
+                  value="up"
+                  @click=${this.upvoteButtonSelected}
+                  ?checked=${this.upvoteSelected}
+                />
                 ${thumbsUp}
-              </button>
-              <button
-                @click=${(e: Event) => {
-                  e.preventDefault();
-                  this.vote = this.vote === 'down' ? undefined : 'down';
-                }}
-                ?disabled=${this.processing}
-                class="vote-button downvote-button ${this
-                  .downvoteButtonClass} ${this.voteNeedsChoosing
-                  ? 'error'
-                  : ''}"
+              </label>
+
+              <label
                 tabindex="0"
+                role="button"
+                ?aria-pressed=${this.downvoteSelected}
+                @click=${this.downvoteButtonSelected}
+                @keyup=${this.downvoteKeypressed}
+                class="vote-button downvote-button ${this
+                  .downvoteButtonClass} ${this.chooseVoteErrorClass}"
               >
+                <input
+                  type="radio"
+                  name="vote"
+                  value="down"
+                  @click=${this.downvoteButtonSelected}
+                  ?checked=${this.downvoteSelected}
+                />
                 ${thumbsDown}
-              </button>
+              </label>
             </div>
             <div>
               <textarea
@@ -295,6 +304,38 @@ export class FeatureFeedback
         </div>
       </div>
     `;
+  }
+
+  private get upvoteSelected() {
+    return this.vote === 'up';
+  }
+
+  private get downvoteSelected() {
+    return this.vote === 'down';
+  }
+
+  private upvoteKeypressed(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      this.upvoteButtonSelected();
+    }
+  }
+
+  private downvoteKeypressed(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      this.downvoteButtonSelected();
+    }
+  }
+
+  private upvoteButtonSelected() {
+    this.vote = this.vote === 'up' ? undefined : 'up';
+  }
+
+  private downvoteButtonSelected() {
+    this.vote = this.vote === 'down' ? undefined : 'down';
+  }
+
+  private get chooseVoteErrorClass(): string {
+    return this.voteNeedsChoosing ? 'error' : '';
   }
 
   private get upvoteButtonClass(): string {
@@ -554,7 +595,7 @@ export class FeatureFeedback
         background-color: #ffffff;
         border: 1px solid #767676;
         border-radius: 2px;
-        padding: 5px;
+        padding: 0;
         width: 25px;
         height: 25px;
         display: flex;
@@ -566,6 +607,14 @@ export class FeatureFeedback
       .vote-button svg {
         width: 15px;
         height: 15px;
+      }
+
+      .vote-button input {
+        margin: 0;
+        padding: 0;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
       }
 
       .vote-button.noselection {
