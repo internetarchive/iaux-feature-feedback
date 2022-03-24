@@ -1,13 +1,13 @@
 {
-  "name": "@internetarchive/your-webcomponent",
-  "description": "The Internet Archive Typescript WebComponent template. It is based on the @open-wc template.",
+  "name": "@internetarchive/feature-feedback",
+  "description": "A webcomponent to help collect feedback on features.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/internetarchive/iaux-your-webcomponent.git"
+    "url": "git+https://github.com/internetarchive/iaux-feature-feedback.git"
   },
   "license": "AGPL-3.0-only",
   "author": "Internet Archive",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
@@ -22,6 +22,9 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@internetarchive/recaptcha-manager": "^0.1.1",
+    "@internetarchive/result-type": "^0.0.1",
+    "@internetarchive/shared-resize-observer": "^0.2.0",
     "lit": "^2.0.2"
   },
   "devDependencies": {
@@ -56,6 +59,9 @@
     "plugins": [
       "@typescript-eslint"
     ],
+    "globals": {
+      "ReCaptchaV2": "readonly"
+    },
     "rules": {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
