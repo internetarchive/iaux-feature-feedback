@@ -134,7 +134,8 @@ export class FeatureFeedback
   private resizingElement = document.body;
 
   private disconnectResizeObserver(observer?: SharedResizeObserverInterface) {
-    observer?.removeObserver({
+    const observerToRemove = observer ?? this.resizeObserver;
+    observerToRemove?.removeObserver({
       handler: this,
       target: this.resizingElement,
     });
