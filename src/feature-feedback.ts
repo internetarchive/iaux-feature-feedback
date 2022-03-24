@@ -557,6 +557,7 @@ export class FeatureFeedback
 
       #prompt > label {
         flex: none;
+        cursor: pointer;
       }
 
       #prompt-text {
