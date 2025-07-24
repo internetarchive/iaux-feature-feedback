@@ -294,7 +294,7 @@ export class FeatureFeedback
             />
             ${thumbsDown}
           </label>
-          <button id="comment-button" @click=${this.showPopup}>
+          <button id="comment-button" type="button" @click=${this.showPopup}>
             Leave a comment
           </button>
         </div>
