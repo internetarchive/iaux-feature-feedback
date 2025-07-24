@@ -255,7 +255,10 @@ export class FeatureFeedback
    */
   private get votePromptDisplay(): TemplateResult {
     return html`
-      <form @submit=${this.submit}></form>
+      <form
+        @submit=${this.submit}
+        ?disabled=${this.processing || this.voteSubmitted}
+      >
         <div class="prompt">
           <span class="prompt-text">${this.prompt}</span>
           <label
@@ -315,7 +318,11 @@ export class FeatureFeedback
           id="popup"
           style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
         >
-          <form @submit=${this.submit} id="form" ?disabled=${this.processing}>
+          <form
+            @submit=${this.submit}
+            id="form"
+            ?disabled=${this.processing || this.voteSubmitted}
+          >
             <div class="prompt">
               <div class="prompt-text">${this.prompt}</div>
               <label
@@ -761,6 +768,10 @@ export class FeatureFeedback
 
       .vote-button.error {
         box-shadow: 0 0 4px red;
+      }
+
+      form[disabled] .vote-button.unselected {
+        cursor: not-allowed;
       }
 
       #comment-button {
