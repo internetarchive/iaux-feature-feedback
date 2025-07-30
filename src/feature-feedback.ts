@@ -18,7 +18,7 @@ import type {
   RecaptchaWidgetInterface,
 } from '@internetarchive/recaptcha-manager';
 import type { FeatureFeedbackServiceInterface } from './feature-feedback-service';
-import type { Vote } from './models';
+import type { FeatureFeedbackDisplayMode, Vote } from './models';
 
 import { thumbsUp } from './img/thumb-up';
 import { thumbsDown } from './img/thumb-down';
@@ -34,6 +34,17 @@ export class FeatureFeedback
 
   @property({ type: String }) buttonText = 'Beta';
 
+  /**
+   * - `button` renders a single button with the provided button text (or default 'Beta').
+   * Clicking the button opens the popup.
+   * - `vote-prompt` renders the provided prompt text alongside two up/down vote buttons and
+   * a "Leave a comment" button.
+   * Clicking either vote button immediately submits feedback without a comment.
+   * Clicking the comment button instead opens the popup.
+   */
+  @property({ type: String }) displayMode: FeatureFeedbackDisplayMode =
+    'button';
+
   @property({ type: Object }) recaptchaManager?: RecaptchaManagerInterface;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
@@ -42,10 +53,6 @@ export class FeatureFeedback
 
   @property({ type: Object })
   featureFeedbackService?: FeatureFeedbackServiceInterface;
-
-  @query('#beta-button') private betaButton!: HTMLButtonElement;
-
-  @query('#popup') private popup!: HTMLDivElement;
 
   @state() private isOpen = false;
 
@@ -65,6 +72,10 @@ export class FeatureFeedback
 
   @state() private recaptchaWidget?: RecaptchaWidgetInterface;
 
+  @query('#container') private container!: HTMLDivElement;
+
+  @query('#popup') private popup!: HTMLDivElement;
+
   @query('#comments') private comments!: HTMLTextAreaElement;
 
   private boundEscapeListener!: (this: Document, ev: KeyboardEvent) => any;
@@ -73,28 +84,11 @@ export class FeatureFeedback
 
   render() {
     return html`
-      <button
-        id="beta-button"
-        @click=${this.showPopup}
-        tabindex="0"
-        ?disabled=${this.disabled}
-      >
-        <span id="button-text">${this.buttonText}</span>
-        <span
-          class="beta-button-thumb upvote-button ${this.voteSubmitted
-            ? this.upvoteButtonClass
-            : ''}"
-          >${thumbsUp}</span
-        >
-        <span
-          class="beta-button-thumb downvote-button ${this.voteSubmitted
-            ? this.downvoteButtonClass
-            : ''}"
-          id="beta-button-thumb-down"
-          >${thumbsDown}</span
-        >
-      </button>
-      ${this.popupTemplate}
+      <div id="container">
+        ${this.displayMode === 'vote-prompt'
+          ? this.votePromptDisplay
+          : this.singleButtonDisplay}
+      </div>
     `;
   }
 
@@ -163,9 +157,8 @@ export class FeatureFeedback
   }
 
   private async showPopup() {
-    if (this.voteSubmitted) return;
+    if (this.voteSubmitted && this.displayMode === 'button') return;
 
-    this.resetState();
     this.setupResizeObserver();
     this.setupScrollObserver();
     this.setupEscapeListener();
@@ -182,32 +175,32 @@ export class FeatureFeedback
   }
 
   private positionPopup() {
-    const betaRect = this.betaButton.getBoundingClientRect();
+    const containerRect = this.container.getBoundingClientRect();
     const popupRect = this.popup.getBoundingClientRect();
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const windowCenterX = windowWidth / 2;
     const windowCenterY = windowHeight / 2;
-    if (betaRect.left < windowCenterX) {
-      this.popupTopX = betaRect.right - 20;
+    if (containerRect.left < windowCenterX) {
+      this.popupTopX = containerRect.right - 20;
     } else {
-      this.popupTopX = betaRect.left + 20 - popupRect.width;
+      this.popupTopX = containerRect.left + 20 - popupRect.width;
     }
     this.popupTopX = Math.max(0, this.popupTopX);
     if (this.popupTopX + popupRect.width > windowWidth) {
       this.popupTopX = windowWidth - popupRect.width;
     }
 
-    if (betaRect.top < windowCenterY) {
-      this.popupTopY = betaRect.bottom - 10;
+    if (containerRect.top < windowCenterY) {
+      this.popupTopY = containerRect.bottom - 10;
     } else {
-      this.popupTopY = betaRect.top + 10 - popupRect.height;
+      this.popupTopY = containerRect.top + 10 - popupRect.height;
     }
   }
 
   private handleEscape(e: KeyboardEvent) {
     if (e.key === 'Escape') {
-      this.closePopup();
+      this.cancel(e);
     }
   }
 
@@ -227,6 +220,92 @@ export class FeatureFeedback
     document.removeEventListener('scroll', this.boundScrollListener);
   }
 
+  /**
+   * Template for the feedback widget in the `button` display mode.
+   */
+  private get singleButtonDisplay(): TemplateResult {
+    return html`
+      <button
+        id="beta-button"
+        @click=${this.showPopup}
+        tabindex="0"
+        ?disabled=${this.disabled}
+      >
+        <span id="button-text">${this.buttonText}</span>
+        <span
+          class="beta-button-thumb upvote-button ${this.voteSubmitted
+            ? this.upvoteButtonClass
+            : ''}"
+          >${thumbsUp}</span
+        >
+        <span
+          class="beta-button-thumb downvote-button ${this.voteSubmitted
+            ? this.downvoteButtonClass
+            : ''}"
+          id="beta-button-thumb-down"
+          >${thumbsDown}</span
+        >
+      </button>
+      ${this.popupTemplate}
+    `;
+  }
+
+  /**
+   * Template for the feedback widget in the `vote-prompt` display mode.
+   */
+  private get votePromptDisplay(): TemplateResult {
+    return html`
+      <form
+        @submit=${this.submit}
+        ?disabled=${this.processing || this.voteSubmitted}
+      >
+        <div class="prompt">
+          <span class="prompt-text">${this.prompt}</span>
+          <label
+            tabindex="0"
+            role="button"
+            aria-pressed=${this.upvoteSelected}
+            @keyup=${this.upvoteKeypressed}
+            class="vote-button upvote-button ${this.upvoteButtonClass}"
+          >
+            <input
+              type="radio"
+              name="vote"
+              value="up"
+              @click=${this.upvoteButtonSelected}
+              ?checked=${this.upvoteSelected}
+            />
+            ${thumbsUp}
+          </label>
+
+          <label
+            tabindex="0"
+            role="button"
+            aria-pressed=${this.downvoteSelected}
+            @keyup=${this.downvoteKeypressed}
+            class="vote-button downvote-button ${this.downvoteButtonClass}"
+          >
+            <input
+              type="radio"
+              name="vote"
+              value="down"
+              @click=${this.downvoteButtonSelected}
+              ?checked=${this.downvoteSelected}
+            />
+            ${thumbsDown}
+          </label>
+          <button id="comment-button" type="button" @click=${this.showPopup}>
+            Leave a comment
+          </button>
+        </div>
+      </form>
+      ${this.popupTemplate}
+    `;
+  }
+
+  /**
+   * Template for the popup menu that appears when the feedback button(s) are clicked.
+   */
   private get popupTemplate() {
     return html`
       <div
@@ -239,13 +318,17 @@ export class FeatureFeedback
           id="popup"
           style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
         >
-          <form @submit=${this.submit} id="form" ?disabled=${this.processing}>
-            <div id="prompt">
-              <div id="prompt-text">${this.prompt}</div>
+          <form
+            @submit=${this.submit}
+            id="form"
+            ?disabled=${this.processing || this.voteSubmitted}
+          >
+            <div class="prompt">
+              <div class="prompt-text">${this.prompt}</div>
               <label
                 tabindex="0"
                 role="button"
-                ?aria-pressed=${this.upvoteSelected}
+                aria-pressed=${this.upvoteSelected}
                 @click=${this.upvoteButtonSelected}
                 @keyup=${this.upvoteKeypressed}
                 class="vote-button upvote-button ${this
@@ -264,7 +347,7 @@ export class FeatureFeedback
               <label
                 tabindex="0"
                 role="button"
-                ?aria-pressed=${this.downvoteSelected}
+                aria-pressed=${this.downvoteSelected}
                 @click=${this.downvoteButtonSelected}
                 @keyup=${this.downvoteKeypressed}
                 class="vote-button downvote-button ${this
@@ -335,11 +418,23 @@ export class FeatureFeedback
   }
 
   private upvoteButtonSelected() {
+    if (this.processing || this.voteSubmitted) return;
     this.vote = this.vote === 'up' ? undefined : 'up';
+    this.handleButtonSelection();
   }
 
   private downvoteButtonSelected() {
+    if (this.processing || this.voteSubmitted) return;
     this.vote = this.vote === 'down' ? undefined : 'down';
+    this.handleButtonSelection();
+  }
+
+  private async handleButtonSelection() {
+    // If a button is pressed _outside_ the popup, it should take effect immediately
+    if (!this.isOpen) {
+      await this.setupRecaptcha();
+      this.submit();
+    }
   }
 
   private get chooseVoteErrorClass(): string {
@@ -371,17 +466,17 @@ export class FeatureFeedback
   private backgroundClicked(e: MouseEvent) {
     if (!(e.target instanceof Node)) return;
     if (this.popup?.contains(e.target)) return;
-    this.closePopup();
+    this.cancel(e);
   }
 
   private cancel(e: Event) {
     e.preventDefault();
-    this.vote = undefined;
     this.closePopup();
+    if (!this.voteSubmitted) this.resetState();
   }
 
-  private async submit(e: Event) {
-    e.preventDefault();
+  private async submit(e?: Event) {
+    e?.preventDefault();
 
     if (!this.vote) {
       this.voteNeedsChoosing = true;
@@ -401,6 +496,7 @@ export class FeatureFeedback
       throw new Error('recaptchaWidget is required');
     }
 
+    const popupWasOpen = this.isOpen;
     this.processing = true;
 
     try {
@@ -414,7 +510,7 @@ export class FeatureFeedback
 
       if (response.success) {
         this.voteSubmitted = true;
-        this.closePopup();
+        if (popupWasOpen) this.closePopup();
       } else {
         this.error = html`There was an error submitting your feedback.`;
       }
@@ -446,7 +542,10 @@ export class FeatureFeedback
     const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #F5F5F7)`;
 
     const promptFontWeight = css`var(--featureFeedbackPromptFontWeight, bold)`;
-    const promptFontSize = css`var(--featureFeedbackPromptFontSize, 14px)`;
+    const promptFontSize = css`var(--featureFeedbackPromptFontSize, 1.4rem)`;
+
+    const commentButtonFontWeight = css`var(--featureFeedbackCommentButtonFontWeight, normal)`;
+    const commentButtonFontSize = css`var(--featureFeedbackCommentButtonFontWeight, 1.4rem)`;
 
     const defaultColor = css`var(--defaultColor, ${darkGrayColor});`;
     const defaultColorSvgFilter = css`var(--defaultColorSvgFilter, ${darkGrayColorSvgFilter});`;
@@ -461,6 +560,10 @@ export class FeatureFeedback
     const unselectedColorSvgFilter = css`var(--unselectedColorSvgFilter, invert(100%) sepia(0%) saturate(107%) hue-rotate(138deg) brightness(89%) contrast(77%));`;
 
     return css`
+      #container {
+        display: inline-block;
+      }
+
       #beta-button {
         font-size: 12px;
         font-weight: bold;
@@ -549,19 +652,19 @@ export class FeatureFeedback
         margin-bottom: 0;
       }
 
-      #prompt {
+      .prompt {
         display: flex;
         align-items: center;
         font-size: ${promptFontSize};
         font-weight: ${promptFontWeight};
       }
 
-      #prompt > label {
+      .prompt > label {
         flex: none;
         cursor: pointer;
       }
 
-      #prompt-text {
+      .prompt-text {
         text-align: left;
       }
 
@@ -665,6 +768,20 @@ export class FeatureFeedback
 
       .vote-button.error {
         box-shadow: 0 0 4px red;
+      }
+
+      form[disabled] .vote-button.unselected {
+        cursor: not-allowed;
+      }
+
+      #comment-button {
+        color: var(--ia-theme-link-color, #4b64ff);
+        font-weight: ${commentButtonFontWeight};
+        font-size: ${commentButtonFontSize};
+      }
+      #comment-button:not([disabled]):hover,
+      #comment-button:not([disabled]):active {
+        text-decoration: underline;
       }
     `;
   }

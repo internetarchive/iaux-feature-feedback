@@ -62,6 +62,15 @@ export class AppRoot extends LitElement {
         deserunt id in cillum pariatur.
       </p>
 
+      <feature-feedback
+        displayMode="vote-prompt"
+        .recaptchaManager=${this.recaptchaManager}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .resizeObserver=${this.resizeObserver}
+        .featureIdentifier=${'demo-feature'}
+      >
+      </feature-feedback>
+
       <p>
         Ea labore laborum proident eiusmod nostrud non do nisi sunt do consequat
         exercitation. Incididunt cillum cupidatat laboris eu enim dolor magna et
