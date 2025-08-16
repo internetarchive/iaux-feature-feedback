@@ -1,6 +1,6 @@
 import { Result } from '@internetarchive/result-type';
 import { FeatureFeedbackServiceInterface } from '../../src/feature-feedback-service';
-import { Vote } from '../../src/models';
+import { SurveyQuestionResponse, Vote } from '../../src/models';
 
 export class MockFeatureFeedbackService
   implements FeatureFeedbackServiceInterface
@@ -9,6 +9,12 @@ export class MockFeatureFeedbackService
     featureIdentifier: string;
     vote: Vote;
     comments?: string | undefined;
+    recaptchaToken: string;
+  };
+
+  surveySubmissionOptions?: {
+    surveyIdentifier: string;
+    responses: SurveyQuestionResponse[];
     recaptchaToken: string;
   };
 
@@ -22,5 +28,14 @@ export class MockFeatureFeedbackService
     return {
       success: true,
     };
+  }
+
+  async submitSurvey(options: {
+    surveyIdentifier: string;
+    responses: SurveyQuestionResponse[];
+    recaptchaToken: string;
+  }): Promise<Result<boolean, Error>> {
+    this.surveySubmissionOptions = options;
+    return { success: true };
   }
 }
