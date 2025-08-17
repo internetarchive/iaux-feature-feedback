@@ -21,6 +21,7 @@ import type {
   RecaptchaManagerInterface,
   RecaptchaWidgetInterface,
 } from '@internetarchive/recaptcha-manager';
+
 import type { FeatureFeedbackServiceInterface } from './feature-feedback-service';
 import type { SurveyQuestion, SurveyQuestionResponse, Vote } from './models';
 import { timedPromise } from './util/timed-promise';
@@ -29,7 +30,7 @@ import { thumbsUp } from './img/thumb-up';
 import { thumbsDown } from './img/thumb-down';
 
 @customElement('ia-feedback-survey')
-export class FeedbackSurvey
+export class IAFeedbackSurvey
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
 {
@@ -518,8 +519,8 @@ export class FeedbackSurvey
 
     const defaultPlaceholder =
       question.required && question.type === 'comment'
-        ? FeedbackSurvey.DEFAULT_COMMENT_PLACEHOLDER_REQUIRED
-        : FeedbackSurvey.DEFAULT_COMMENT_PLACEHOLDER_OPTIONAL;
+        ? IAFeedbackSurvey.DEFAULT_COMMENT_PLACEHOLDER_REQUIRED
+        : IAFeedbackSurvey.DEFAULT_COMMENT_PLACEHOLDER_OPTIONAL;
 
     const placeholder = question.commentPlaceholder ?? defaultPlaceholder;
     const hasError =
@@ -730,7 +731,7 @@ export class FeedbackSurvey
 
     if (!this.validate()) {
       this.missingRequiredInput = true;
-      this.error = html`${FeedbackSurvey.ERROR_MESSAGE_MISSING_REQUIRED_INPUT}`;
+      this.error = html`${IAFeedbackSurvey.ERROR_MESSAGE_MISSING_REQUIRED_INPUT}`;
       return;
     }
 
@@ -781,10 +782,10 @@ export class FeedbackSurvey
         this.surveySubmitted = true;
         if (popupWasOpen) this.closePopup();
       } else {
-        this.error = html`${FeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED}`;
+        this.error = html`${IAFeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED}`;
       }
     } catch (err) {
-      this.error = html`${FeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED}
+      this.error = html`${IAFeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED}
         <br />
         ${msg('Error: ')}${err instanceof Error ? err.message : err}`;
     }

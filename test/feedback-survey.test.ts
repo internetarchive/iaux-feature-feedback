@@ -1,17 +1,17 @@
 /* eslint-disable import/no-duplicates */
 import { html, fixture, expect, aTimeout } from '@open-wc/testing';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
-import { FeedbackSurvey } from '../src/feedback-survey';
+import { IAFeedbackSurvey } from '../src/ia-feedback-survey';
 import { SurveyQuestion } from '../src/models';
 import { MockFeatureFeedbackService } from './mocks/mock-feature-feedback-service';
 import { MockRecaptchaManager } from './mocks/mock-recaptcha-manager';
-import '../src/feedback-survey';
+import '../src/ia-feedback-survey';
 
-describe('FeedbackSurvey', () => {
+describe('IAFeedbackSurvey', () => {
   it('shows a button that defaults to text Feedback', async () => {
     const el = (await fixture(html`
       <ia-feedback-survey></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const textContainer = el.shadowRoot!.querySelector(
       '#button-text'
@@ -22,7 +22,7 @@ describe('FeedbackSurvey', () => {
   it('shows up/down thumbs on the button if specified', async () => {
     const el = (await fixture(html`
       <ia-feedback-survey showButtonThumbs></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const thumbIcons = el.shadowRoot!.querySelectorAll('.beta-button-icon');
     expect(thumbIcons.length).to.equal(2);
@@ -31,7 +31,7 @@ describe('FeedbackSurvey', () => {
   it('can customize the button text', async () => {
     const el = (await fixture(html`
       <ia-feedback-survey .buttonText=${'Boop'}></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const textContainer = el.shadowRoot!.querySelector(
       '#button-text'
@@ -45,7 +45,7 @@ describe('FeedbackSurvey', () => {
       <ia-feedback-survey
         .resizeObserver=${resizeObserver}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -67,7 +67,7 @@ describe('FeedbackSurvey', () => {
   it('closes the popup when the cancel button is clicked', async () => {
     const el = (await fixture(html`
       <ia-feedback-survey></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -93,7 +93,7 @@ describe('FeedbackSurvey', () => {
   it('closes the popup when the background is clicked', async () => {
     const el = (await fixture(html`
       <ia-feedback-survey></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -116,7 +116,7 @@ describe('FeedbackSurvey', () => {
   it('closes the popup when the Escape key is pressed', async () => {
     const el = (await fixture(html`
       <ia-feedback-survey></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -153,7 +153,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -185,7 +185,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -232,7 +232,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -280,7 +280,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -307,7 +307,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -335,7 +335,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -362,7 +362,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -395,7 +395,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -423,7 +423,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -452,7 +452,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -481,7 +481,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -509,7 +509,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -551,7 +551,7 @@ describe('FeedbackSurvey', () => {
         surveyIdentifier="foo-survey"
         .questions=${questions}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -596,7 +596,7 @@ describe('FeedbackSurvey', () => {
         .featureFeedbackService=${service}
         .recaptchaManager=${recaptchaManager}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -661,7 +661,7 @@ describe('FeedbackSurvey', () => {
         .featureFeedbackService=${service}
         .recaptchaManager=${recaptchaManager}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -718,7 +718,7 @@ describe('FeedbackSurvey', () => {
         .featureFeedbackService=${service}
         .recaptchaManager=${recaptchaManager}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -758,7 +758,7 @@ describe('FeedbackSurvey', () => {
         .featureFeedbackService=${service}
         .submitTimeout=${100}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'
@@ -843,7 +843,7 @@ describe('FeedbackSurvey', () => {
         .featureFeedbackService=${service}
         .recaptchaManager=${recaptchaManager}
       ></ia-feedback-survey>
-    `)) as FeedbackSurvey;
+    `)) as IAFeedbackSurvey;
 
     const button = el.shadowRoot!.querySelector(
       '#beta-button'

@@ -5,7 +5,7 @@ import { customElement } from 'lit/decorators.js';
 import { FeatureFeedbackService } from '../src/feature-feedback-service';
 import { SurveyQuestion } from '../src/models';
 import '../src/feature-feedback';
-import '../src/feedback-survey';
+import '../src/ia-feedback-survey';
 
 const SESSION_ID_STORAGE_KEY = 'feature-feedback-demo-session-id';
 const getSessionId = (): string => {
