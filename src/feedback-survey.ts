@@ -10,6 +10,7 @@ import {
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { msg } from '@lit/localize';
 
 import type {
@@ -527,6 +528,12 @@ export class FeedbackSurvey
       question.type === 'comment' &&
       !response.comment;
 
+    const { commentHeight, commentResize } = question;
+    const commentStyles = styleMap({
+      height: commentHeight ? `${commentHeight}px` : null,
+      resize: commentResize ?? null,
+    });
+
     return html`<div class="comments-container">
       <textarea
         placeholder=${placeholder}
@@ -534,9 +541,7 @@ export class FeedbackSurvey
         name="comments"
         tabindex="0"
         data-index=${response.index}
-        style=${question.commentHeight
-          ? `height:${question.commentHeight}px`
-          : ''}
+        style=${commentStyles}
         ?disabled=${this.processing}
         .value=${response.comment ?? ''}
         @input=${this.saveComment}

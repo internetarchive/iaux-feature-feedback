@@ -457,6 +457,93 @@ describe('FeedbackSurvey', () => {
     expect(promptTexts[0].textContent).to.match(/1\.\s+foo/);
   });
 
+  it('uses provided placeholder for comment box', async () => {
+    const questions: SurveyQuestion[] = [
+      {
+        questionText: 'foo',
+        type: 'comment',
+        allowComments: true,
+        commentPlaceholder: 'bar',
+      },
+    ];
+
+    const el = (await fixture(html`
+      <ia-feedback-survey
+        surveyIdentifier="foo-survey"
+        .questions=${questions}
+      ></ia-feedback-survey>
+    `)) as FeedbackSurvey;
+
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+
+    const commentField = el.shadowRoot!.querySelector(
+      'textarea.comments'
+    ) as HTMLTextAreaElement;
+    expect(commentField.placeholder).to.equal('bar');
+  });
+
+  it('uses provided height for comment box', async () => {
+    const questions: SurveyQuestion[] = [
+      {
+        questionText: 'foo',
+        type: 'comment',
+        allowComments: true,
+        commentHeight: 123,
+      },
+    ];
+
+    const el = (await fixture(html`
+      <ia-feedback-survey
+        surveyIdentifier="foo-survey"
+        .questions=${questions}
+      ></ia-feedback-survey>
+    `)) as FeedbackSurvey;
+
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+
+    const commentField = el.shadowRoot!.querySelector(
+      'textarea.comments'
+    ) as HTMLTextAreaElement;
+    expect(getComputedStyle(commentField).height).to.equal('123px');
+  });
+
+  it('uses provided resize rule for comment box', async () => {
+    const questions: SurveyQuestion[] = [
+      {
+        questionText: 'foo',
+        type: 'comment',
+        allowComments: true,
+        commentResize: 'vertical',
+      },
+    ];
+
+    const el = (await fixture(html`
+      <ia-feedback-survey
+        surveyIdentifier="foo-survey"
+        .questions=${questions}
+      ></ia-feedback-survey>
+    `)) as FeedbackSurvey;
+
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+
+    const commentField = el.shadowRoot!.querySelector(
+      'textarea.comments'
+    ) as HTMLTextAreaElement;
+    expect(getComputedStyle(commentField).resize).to.equal('vertical');
+  });
+
   it('shows error-styled vote buttons if user tries to submit without responding to a required vote question', async () => {
     const questions: SurveyQuestion[] = [
       {
