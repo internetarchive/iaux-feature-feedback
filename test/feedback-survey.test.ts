@@ -793,7 +793,7 @@ describe('FeedbackSurvey', () => {
         extraInfo: 'foo-extra-1',
       },
       {
-        questionText: 'required vote without comment',
+        questionText: 'required vote, no comment',
         type: 'vote',
         required: true,
       },
@@ -815,7 +815,7 @@ describe('FeedbackSurvey', () => {
         extraInfo: 'foo-extra-2',
       },
       {
-        questionText: 'optional vote without comment',
+        questionText: 'optional vote, no comment',
         type: 'vote',
       },
       {
@@ -882,12 +882,12 @@ describe('FeedbackSurvey', () => {
       getCommentBox(elmt),
     ];
 
-    const [q1Text, q1Up, q1Down, q1Comment] = getSurveyElements(questions[0]);
-    const [q2Text, q2Up, q2Down, q2Comment] = getSurveyElements(questions[1]);
-    const [q3Text, q3Up, q3Down, q3Comment] = getSurveyElements(questions[2]);
-    const [q4Text, q4Up, q4Down, q4Comment] = getSurveyElements(questions[3]);
-    const [q5Text, q5Up, q5Down, q5Comment] = getSurveyElements(questions[4]);
-    const [q6Text, q6Up, q6Down, q6Comment] = getSurveyElements(questions[5]);
+    const [q1Prompt, q1Up, q1Down, q1Comment] = getSurveyElements(questions[0]);
+    const [q2Prompt, q2Up, q2Down, q2Comment] = getSurveyElements(questions[1]);
+    const [q3Prompt, q3Up, q3Down, q3Comment] = getSurveyElements(questions[2]);
+    const [q4Prompt, q4Up, q4Down, q4Comment] = getSurveyElements(questions[3]);
+    const [q5Prompt, q5Up, q5Down, q5Comment] = getSurveyElements(questions[4]);
+    const [q6Prompt, q6Up, q6Down, q6Comment] = getSurveyElements(questions[5]);
 
     // Answer some but not all of the required questions
     q1Up.click();
@@ -904,35 +904,35 @@ describe('FeedbackSurvey', () => {
     await el.updateComplete;
 
     // Q1 had all required responses, so no error styling
-    expect(q1Text.textContent).to.match(/1\.\s+required vote without comment/);
+    expect(q1Prompt.textContent).to.match(/1\.\s+required vote, no comment/);
     expect(q1Up.classList.contains('error')).to.be.false;
     expect(q1Down.classList.contains('error')).to.be.false;
     expect(q1Comment).not.to.exist;
 
     // Q2 was missing a required vote, so the vote buttons should be error-styled
-    expect(q2Text.textContent).to.match(/2\.\s+required vote with comment/);
+    expect(q2Prompt.textContent).to.match(/2\.\s+required vote with comment/);
     expect(q2Up.classList.contains('error')).to.be.true;
     expect(q2Down.classList.contains('error')).to.be.true;
     expect(q2Comment.classList.contains('error')).to.be.false;
 
     // Q3 was missing a required comment, so the comment box should be error-styled
-    expect(q3Text.textContent).to.match(/3\.\s+required comment/);
+    expect(q3Prompt.textContent).to.match(/3\.\s+required comment/);
     expect(q3Up).not.to.exist;
     expect(q3Down).not.to.exist;
     expect(q3Comment.classList.contains('error')).to.be.true;
 
     // Q4-Q6 are not required, so no error styling
-    expect(q4Text.textContent).to.match(/4\.\s+optional vote without comment/);
+    expect(q4Prompt.textContent).to.match(/4\.\s+optional vote, no comment/);
     expect(q4Up.classList.contains('error')).to.be.false;
     expect(q4Down.classList.contains('error')).to.be.false;
     expect(q4Comment).not.to.exist;
 
-    expect(q5Text.textContent).to.match(/5\.\s+optional vote with comment/);
+    expect(q5Prompt.textContent).to.match(/5\.\s+optional vote with comment/);
     expect(q5Up.classList.contains('error')).to.be.false;
     expect(q5Down.classList.contains('error')).to.be.false;
     expect(q5Comment.classList.contains('error')).to.be.false;
 
-    expect(q6Text.textContent).to.match(/6\.\s+optional comment/);
+    expect(q6Prompt.textContent).to.match(/6\.\s+optional comment/);
     expect(q6Up).not.to.exist;
     expect(q6Down).not.to.exist;
     expect(q6Comment.classList.contains('error')).to.be.false;
