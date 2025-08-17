@@ -178,7 +178,7 @@ export class FeedbackSurvey
     return html`<div id="container">${this.feedbackButtonTemplate}</div>`;
   }
 
-  updated(changed: PropertyValues): void {
+  willUpdate(changed: PropertyValues): void {
     if (changed.has('questions')) {
       this.resetSubmissionState();
       this.regenerateResponseMap();
