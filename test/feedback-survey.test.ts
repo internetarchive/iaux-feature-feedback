@@ -7,55 +7,6 @@ import { MockFeatureFeedbackService } from './mocks/mock-feature-feedback-servic
 import { MockRecaptchaManager } from './mocks/mock-recaptcha-manager';
 import '../src/feedback-survey';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const longSurveyQuestions: SurveyQuestion[] = [
-  {
-    questionText: 'extra info',
-    type: 'extra',
-    extraInfo: 'foo-extra-1',
-  },
-  {
-    questionText: 'required vote without comment',
-    type: 'vote',
-    required: true,
-  },
-  {
-    questionText: 'required vote with comment',
-    type: 'vote',
-    required: true,
-    allowComments: true,
-  },
-  {
-    questionText: 'required comment',
-    type: 'comment',
-    required: true,
-    allowComments: true,
-  },
-  {
-    questionText: 'more extra info',
-    type: 'extra',
-    extraInfo: 'foo-extra-2',
-  },
-  {
-    questionText: 'optional vote without comment',
-    type: 'vote',
-  },
-  {
-    questionText: 'optional vote with comment',
-    type: 'vote',
-    allowComments: true,
-  },
-  {
-    questionText: 'optional comment',
-    type: 'comment',
-  },
-  {
-    questionText: 'yet more extra info',
-    type: 'extra',
-    extraInfo: 'foo-extra-3',
-  },
-];
-
 describe('FeedbackSurvey', () => {
   it('shows a button that defaults to text Feedback', async () => {
     const el = (await fixture(html`
@@ -829,5 +780,238 @@ describe('FeedbackSurvey', () => {
     await aTimeout(0);
 
     expect(service.surveySubmissionOptions).not.to.exist;
+  });
+
+  it('correctly handles many different questions & questions types simultaneously', async () => {
+    const service = new MockFeatureFeedbackService();
+    const recaptchaManager = new MockRecaptchaManager();
+
+    const longSurveyQuestions: SurveyQuestion[] = [
+      {
+        questionText: 'extra info',
+        type: 'extra',
+        extraInfo: 'foo-extra-1',
+      },
+      {
+        questionText: 'required vote without comment',
+        type: 'vote',
+        required: true,
+      },
+      {
+        questionText: 'required vote with comment',
+        type: 'vote',
+        required: true,
+        allowComments: true,
+      },
+      {
+        questionText: 'required comment',
+        type: 'comment',
+        required: true,
+        allowComments: true,
+      },
+      {
+        questionText: 'more extra info',
+        type: 'extra',
+        extraInfo: 'foo-extra-2',
+      },
+      {
+        questionText: 'optional vote without comment',
+        type: 'vote',
+      },
+      {
+        questionText: 'optional vote with comment',
+        type: 'vote',
+        allowComments: true,
+      },
+      {
+        questionText: 'optional comment',
+        type: 'comment',
+        allowComments: true,
+      },
+      {
+        questionText: 'yet more extra info',
+        type: 'extra',
+        extraInfo: 'foo-extra-3',
+      },
+    ];
+
+    const el = (await fixture(html`
+      <ia-feedback-survey
+        showQuestionNumbers
+        surveyIdentifier="foo-survey"
+        .questions=${longSurveyQuestions}
+        .featureFeedbackService=${service}
+        .recaptchaManager=${recaptchaManager}
+      ></ia-feedback-survey>
+    `)) as FeedbackSurvey;
+
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+
+    // Ensure it renders the 6 non-extra questions
+    const questions = el.shadowRoot!.querySelectorAll('.question');
+    expect(questions.length).to.equal(6);
+
+    // Define some helpers for conciseness
+    const getPromptText = (elmt: Element) =>
+      elmt.querySelector('.prompt-text') as HTMLDivElement;
+
+    const getUpvoteButton = (elmt: Element) =>
+      elmt.querySelector('.vote-button.upvote-button') as HTMLLabelElement;
+
+    const getDownvoteButton = (elmt: Element) =>
+      elmt.querySelector('.vote-button.downvote-button') as HTMLLabelElement;
+
+    const getCommentBox = (elmt: Element) =>
+      elmt.querySelector('.comments') as HTMLTextAreaElement;
+
+    const getSurveyElements = (
+      elmt: Element
+    ): [
+      HTMLDivElement,
+      HTMLLabelElement,
+      HTMLLabelElement,
+      HTMLTextAreaElement
+    ] => [
+      getPromptText(elmt),
+      getUpvoteButton(elmt),
+      getDownvoteButton(elmt),
+      getCommentBox(elmt),
+    ];
+
+    const [q1Text, q1Up, q1Down, q1Comment] = getSurveyElements(questions[0]);
+    const [q2Text, q2Up, q2Down, q2Comment] = getSurveyElements(questions[1]);
+    const [q3Text, q3Up, q3Down, q3Comment] = getSurveyElements(questions[2]);
+    const [q4Text, q4Up, q4Down, q4Comment] = getSurveyElements(questions[3]);
+    const [q5Text, q5Up, q5Down, q5Comment] = getSurveyElements(questions[4]);
+    const [q6Text, q6Up, q6Down, q6Comment] = getSurveyElements(questions[5]);
+
+    // Answer some but not all of the required questions
+    q1Up.click();
+
+    q2Comment.value = 'foo-comment';
+    q2Comment.dispatchEvent(new InputEvent('input'));
+
+    // Try to submit and check what gets the error styling
+    await el.updateComplete;
+    const submitButton = el.shadowRoot!.querySelector(
+      '#submit-button'
+    ) as HTMLInputElement;
+    submitButton.click();
+    await el.updateComplete;
+
+    // Q1 had all required responses, so no error styling
+    expect(q1Text.textContent).to.match(/1\.\s+required vote without comment/);
+    expect(q1Up.classList.contains('error')).to.be.false;
+    expect(q1Down.classList.contains('error')).to.be.false;
+    expect(q1Comment).not.to.exist;
+
+    // Q2 was missing a required vote, so the vote buttons should be error-styled
+    expect(q2Text.textContent).to.match(/2\.\s+required vote with comment/);
+    expect(q2Up.classList.contains('error')).to.be.true;
+    expect(q2Down.classList.contains('error')).to.be.true;
+    expect(q2Comment.classList.contains('error')).to.be.false;
+
+    // Q3 was missing a required comment, so the comment box should be error-styled
+    expect(q3Text.textContent).to.match(/3\.\s+required comment/);
+    expect(q3Up).not.to.exist;
+    expect(q3Down).not.to.exist;
+    expect(q3Comment.classList.contains('error')).to.be.true;
+
+    // Q4-Q6 are not required, so no error styling
+    expect(q4Text.textContent).to.match(/4\.\s+optional vote without comment/);
+    expect(q4Up.classList.contains('error')).to.be.false;
+    expect(q4Down.classList.contains('error')).to.be.false;
+    expect(q4Comment).not.to.exist;
+
+    expect(q5Text.textContent).to.match(/5\.\s+optional vote with comment/);
+    expect(q5Up.classList.contains('error')).to.be.false;
+    expect(q5Down.classList.contains('error')).to.be.false;
+    expect(q5Comment.classList.contains('error')).to.be.false;
+
+    expect(q6Text.textContent).to.match(/6\.\s+optional comment/);
+    expect(q6Up).not.to.exist;
+    expect(q6Down).not.to.exist;
+    expect(q6Comment.classList.contains('error')).to.be.false;
+
+    // Fill in the remaining required responses + some optional ones, and resubmit
+    q2Down.click();
+
+    q3Comment.value = 'bar-comment';
+    q3Comment.dispatchEvent(new InputEvent('input'));
+
+    q5Up.click();
+    q5Comment.value = 'baz-comment';
+    q5Comment.dispatchEvent(new InputEvent('input'));
+
+    await el.updateComplete;
+    submitButton.click();
+    await el.updateComplete;
+    await aTimeout(0);
+
+    // Verify that the responses sent to the service are correct
+    expect(service.surveySubmissionOptions).to.deep.equal({
+      surveyIdentifier: 'foo-survey',
+      responses: [
+        {
+          question: longSurveyQuestions[0],
+          index: 0,
+          vote: undefined,
+          comment: 'foo-extra-1',
+        },
+        {
+          question: longSurveyQuestions[1],
+          index: 1,
+          vote: 'up',
+          comment: undefined,
+        },
+        {
+          question: longSurveyQuestions[2],
+          index: 2,
+          vote: 'down',
+          comment: 'foo-comment',
+        },
+        {
+          question: longSurveyQuestions[3],
+          index: 3,
+          vote: undefined,
+          comment: 'bar-comment',
+        },
+        {
+          question: longSurveyQuestions[4],
+          index: 4,
+          vote: undefined,
+          comment: 'foo-extra-2',
+        },
+        {
+          question: longSurveyQuestions[5],
+          index: 5,
+          vote: undefined,
+          comment: undefined,
+        },
+        {
+          question: longSurveyQuestions[6],
+          index: 6,
+          vote: 'up',
+          comment: 'baz-comment',
+        },
+        {
+          question: longSurveyQuestions[7],
+          index: 7,
+          vote: undefined,
+          comment: undefined,
+        },
+        {
+          question: longSurveyQuestions[8],
+          index: 8,
+          vote: undefined,
+          comment: 'foo-extra-3',
+        },
+      ],
+      recaptchaToken: 'boop',
+    });
   });
 });
