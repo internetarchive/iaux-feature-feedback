@@ -732,7 +732,7 @@ export class FeedbackSurvey
     const { surveyIdentifier, submitTimeout, featureFeedbackService } = this;
 
     if (!surveyIdentifier) {
-      throw new Error('featureIdentifier is required');
+      throw new Error('surveyIdentifier is required');
     }
 
     if (!featureFeedbackService) {

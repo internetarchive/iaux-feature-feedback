@@ -1,9 +1,9 @@
 /* eslint-disable import/no-duplicates */
-import { html, fixture, expect, nextFrame } from '@open-wc/testing';
+import { html, fixture, expect, aTimeout } from '@open-wc/testing';
 import { FeatureFeedback } from '../src/feature-feedback';
-import '../src/feature-feedback';
 import { MockFeatureFeedbackService } from './mocks/mock-feature-feedback-service';
 import { MockRecaptchaManager } from './mocks/mock-recaptcha-manager';
+import '../src/feature-feedback';
 
 describe('FeatureFeedback', () => {
   it('shows a button that defaults to text Beta', async () => {
@@ -185,7 +185,7 @@ describe('FeatureFeedback', () => {
     upvoteButton.click();
 
     await el.updateComplete;
-    await nextFrame();
+    await aTimeout(0); // Next tick
     expect(service.submissionOptions).to.deep.equal({
       featureIdentifier: 'foo-feature',
       vote: 'up',
