@@ -811,7 +811,7 @@ export class IAFeedbackSurvey
     const cancelButtonColor = css`var(--featureFeedbackCancelButtonColor, #515151)`;
     const popupBlockerColor = css`var(--featureFeedbackPopupBlockerColor, rgba(255, 255, 255, 0.3))`;
 
-    const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #F5F5F7)`;
+    const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #FBFBFD)`;
 
     const promptFontWeight = css`var(--featureFeedbackPromptFontWeight, bold)`;
     const promptFontSize = css`var(--featureFeedbackPromptFontSize, 1.4rem)`;
