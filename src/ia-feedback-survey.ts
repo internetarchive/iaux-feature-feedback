@@ -951,6 +951,7 @@ export class IAFeedbackSurvey
 
       .prompt-text {
         text-align: left;
+        flex-grow: 1;
       }
 
       .comments {
