@@ -3,62 +3,11 @@ import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { html, css, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { FeatureFeedbackService } from '../src/feature-feedback-service';
-import { SurveyQuestion } from '../src/models';
 import '../src/feature-feedback';
-import '../src/ia-feedback-survey';
-
-const SESSION_ID_STORAGE_KEY = 'feature-feedback-demo-session-id';
-const getSessionId = (): string => {
-  const existingSessionId = window.sessionStorage.getItem(
-    SESSION_ID_STORAGE_KEY
-  );
-  if (existingSessionId) return existingSessionId;
-
-  const newSessionId = `${Math.floor(Math.random() * 1000000000)}`;
-  window.sessionStorage.setItem(SESSION_ID_STORAGE_KEY, newSessionId);
-  return newSessionId;
-};
-
-const surveyQuestions: SurveyQuestion[] = [
-  {
-    questionText: 'Session ID',
-    type: 'extra',
-    extraInfo: getSessionId(),
-  },
-  {
-    questionText: 'User Agent',
-    type: 'extra',
-    extraInfo: navigator.userAgent,
-  },
-  {
-    questionText: 'What is your favorite animal?',
-    type: 'comment',
-    required: true,
-    allowComments: true,
-    commentPlaceholder: 'Ex: zebra',
-    commentHeight: 32,
-  },
-  {
-    questionText: 'How do you feel about foos?',
-    type: 'vote',
-    required: true,
-    allowComments: true,
-    commentPlaceholder: 'Why? (optional)',
-    commentHeight: 32,
-  },
-  {
-    questionText: 'What do you think of foobars?',
-    type: 'vote',
-    required: true,
-    allowComments: false,
-  },
-  {
-    questionText: 'Any other thoughts?',
-    type: 'comment',
-    required: false,
-    allowComments: true,
-  },
-];
+import '../src/survey/ia-feedback-survey';
+import '../src/survey/questions/ia-survey-vote';
+import '../src/survey/questions/ia-survey-comment';
+import '../src/survey/questions/ia-survey-extra';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -156,11 +105,45 @@ export class AppRoot extends LitElement {
         showButtonThumbs
         showQuestionNumbers
         .surveyIdentifier=${'demo-survey'}
-        .questions=${surveyQuestions}
         .recaptchaManager=${this.recaptchaManager}
         .featureFeedbackService=${this.featureFeedbackService}
         .resizeObserver=${this.resizeObserver}
-      ></ia-feedback-survey>
+      >
+        <ia-survey-vote
+          prompt="How do you feel about foo?"
+          required
+        ></ia-survey-vote>
+        <ia-survey-extra name="foo" value="bar"></ia-survey-extra>
+        <p>
+          This is some embedded explanatory text. The above question requires a
+          response, but the next question is optional.
+        </p>
+        <ia-survey-vote
+          prompt="How do you feel about bar?"
+          showComments
+          commentPlaceholder="You may enter an optional comment as well..."
+        ></ia-survey-vote>
+        <p>The following question should be disabled.</p>
+        <ia-survey-vote
+          prompt="How do you feel about baz?"
+          disabled
+        ></ia-survey-vote>
+        <p>The following question should not be numbered.</p>
+        <ia-survey-vote
+          prompt="How do you feel about quux?"
+          skipNumber
+        ></ia-survey-vote>
+        <ia-survey-comment
+          prompt="What does foobar mean to you?"
+          placeholder="You must answer this question."
+          required
+        ></ia-survey-comment>
+        <ia-survey-comment
+          prompt="Anything else to add?"
+          placeholder="Please share... (optional)"
+          style="--commentResize: vertical;"
+        ></ia-survey-comment>
+      </ia-feedback-survey>
     `;
   }
 
@@ -171,6 +154,10 @@ export class AppRoot extends LitElement {
 
     .right {
       float: right;
+    }
+
+    ia-feedback-survey > p {
+      font-size: 12px;
     }
   `;
 }

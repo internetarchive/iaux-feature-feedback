@@ -1,0 +1,97 @@
+/**
+ * The current state of a survey submission:
+ *  - `idle`: No submit has succeeded or been attempted since the popup was last toggled.
+ *  - `processing`: The widget is currently submitting a response.
+ *  - `submitted`: The widget has successfully submitted a response.
+ *  - `error`: The widget encountered an error while submitting its last response,
+ *    and the popup has not yet been closed.
+ */
+export type SurveySubmissionState =
+  | 'idle'
+  | 'processing'
+  | 'submitted'
+  | 'error';
+
+/**
+ * The user's response to a survey question
+ */
+export type IASurveyQuestionResponse = {
+  /**
+   * A string identifying the survey question (e.g., the prompt that was responded to).
+   */
+  name: string;
+
+  /**
+   * (Optiona) A rating response to a survey question, which may be a binary up/down or
+   * some other variety of quantifiable feedback.
+   */
+  rating?: string;
+
+  /**
+   * (Optional) A freeform text comment response to a survey question.
+   */
+  comment?: string;
+};
+
+/**
+ * Defines the shape that question components must conform to in order to
+ * successfully take part in the ia-feedback-survey flow.
+ */
+export interface IASurveyQuestionInterface {
+  /**
+   * Whether this question should be disabled and not accept user input.
+   */
+  disabled: boolean;
+
+  /**
+   * Whether this question is visible to the user.
+   */
+  readonly visible: boolean;
+
+  /**
+   * The user's current survey response for this question.
+   */
+  readonly response: IASurveyQuestionResponse;
+
+  /**
+   * Validates the response value of this question, returning a boolean indicating
+   * whether it is valid to submit. Depending on the component, this may also set
+   * the component's form validity state and update its styling accordingly.
+   */
+  validate(): boolean;
+}
+
+/**
+ * Type guard to check whether an HTML element has a boolean `disabled` property.
+ */
+export function canBeDisabled(
+  elmt: HTMLElement
+): elmt is HTMLElement & { disabled: boolean } {
+  return 'disabled' in elmt && typeof elmt.disabled === 'boolean';
+}
+
+/**
+ * Type guard to check whether an HTML element has a `validate` function.
+ */
+export function canBeValidated(
+  elmt: HTMLElement
+): elmt is HTMLElement & { validate: Function } {
+  return 'validate' in elmt && typeof elmt.validate === 'function';
+}
+
+/**
+ * Type guard to check whether an HTML element has a `response` property that
+ * conforms to the `IASurveyQuestionResponse` interface.
+ */
+export function hasSurveyResponse(
+  elmt: HTMLElement
+): elmt is HTMLElement & { response: IASurveyQuestionResponse } {
+  const hasValidResponseProp =
+    'response' in elmt &&
+    typeof elmt.response === 'object' &&
+    elmt.response !== null &&
+    'name' in elmt.response &&
+    typeof elmt.response.name === 'string';
+
+  return hasValidResponseProp;
+}

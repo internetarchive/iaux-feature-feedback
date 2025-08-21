@@ -1,5 +1,6 @@
 import type { Result } from '@internetarchive/result-type';
-import { SurveyQuestionResponse, Vote } from './models';
+import { Vote } from './models';
+import { IASurveyQuestionResponse } from './survey/models';
 
 export interface FeatureFeedbackServiceInterface {
   /**
@@ -26,7 +27,7 @@ export interface FeatureFeedbackServiceInterface {
    */
   submitSurvey(options: {
     surveyIdentifier: string;
-    responses: SurveyQuestionResponse[];
+    responses: IASurveyQuestionResponse[];
     recaptchaToken: string;
   }): Promise<Result<boolean, Error>>;
 }
@@ -80,7 +81,7 @@ export class FeatureFeedbackService implements FeatureFeedbackServiceInterface {
    */
   async submitSurvey(options: {
     surveyIdentifier: string;
-    responses: SurveyQuestionResponse[];
+    responses: IASurveyQuestionResponse[];
     recaptchaToken: string;
   }): Promise<Result<boolean, Error>> {
     const url = new URL(this.serviceUrl);
@@ -88,8 +89,8 @@ export class FeatureFeedbackService implements FeatureFeedbackServiceInterface {
     url.searchParams.append('token', options.recaptchaToken);
     const body = JSON.stringify({
       surveyResponses: options.responses.map(resp => ({
-        question: resp.question.questionText,
-        ...(resp.vote ? { rating: resp.vote } : {}),
+        name: resp.name,
+        ...(resp.rating ? { rating: resp.rating } : {}),
         ...(resp.comment ? { comment: resp.comment } : {}),
       })),
     });
