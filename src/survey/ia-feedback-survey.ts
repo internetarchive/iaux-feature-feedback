@@ -382,7 +382,7 @@ export class IAFeedbackSurvey
    *
    * This will also trigger the Recaptcha widget to begin loading, if it has not already.
    */
-  private async showPopup(): Promise<void> {
+  private showPopup(): void {
     if (this.isSubmitted) return;
 
     this.setupResizeObserver();
