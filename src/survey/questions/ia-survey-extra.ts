@@ -23,8 +23,8 @@ export class IASurveyExtra
   readonly visible = false;
 
   /**
-   * @inheritdoc
    * (Unused for extras)
+   * @inheritdoc
    */
   disabled = false;
 
@@ -42,6 +42,13 @@ export class IASurveyExtra
    */
   validate(): boolean {
     return true;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  get numbered(): boolean {
+    return false;
   }
 
   /**

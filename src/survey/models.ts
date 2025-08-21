@@ -36,6 +36,11 @@ export type IASurveyQuestionResponse = {
 /**
  * Defines the shape that question components must conform to in order to
  * successfully take part in the ia-feedback-survey flow.
+ *
+ * Additionally, if `numbered` is true, the component must contain a `<slot>`
+ * named `question-number` in order to receive the appropriate number for its
+ * position in the survey. If no such slot is found, the question's number
+ * will not be displayed (but will still count in the overall number order).
  */
 export interface IASurveyQuestionInterface {
   /**
@@ -47,6 +52,12 @@ export interface IASurveyQuestionInterface {
    * Whether this question is visible to the user.
    */
   readonly visible: boolean;
+
+  /**
+   * Whether this question should participate in question numbering.
+   * If false, it will be skipped entirely in the number order.
+   */
+  readonly numbered: boolean;
 
   /**
    * The user's current survey response for this question.
@@ -68,6 +79,15 @@ export function canBeDisabled(
   elmt: HTMLElement
 ): elmt is HTMLElement & { disabled: boolean } {
   return 'disabled' in elmt && typeof elmt.disabled === 'boolean';
+}
+
+/**
+ * Type guard to check whether an HTML element has a boolean `numbered` property.
+ */
+export function canBeNumbered(
+  elmt: HTMLElement
+): elmt is HTMLElement & { numbered: boolean } {
+  return 'numbered' in elmt && typeof elmt.numbered === 'boolean';
 }
 
 /**

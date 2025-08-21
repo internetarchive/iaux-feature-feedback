@@ -431,6 +431,7 @@ describe('IAFeedbackSurvey', () => {
     const el = (await fixture(html`
       <ia-feedback-survey
         surveyIdentifier="foo-survey"
+        showQuestionNumbers
         .featureFeedbackService=${service}
         .recaptchaManager=${recaptchaManager}
       >

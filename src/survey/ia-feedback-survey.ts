@@ -29,6 +29,7 @@ import { iaButtonStyles } from '@internetarchive/ia-styles';
 import type { FeatureFeedbackServiceInterface } from '../feature-feedback-service';
 import {
   canBeDisabled,
+  canBeNumbered,
   canBeValidated,
   hasSurveyResponse,
   SurveySubmissionState,
@@ -197,6 +198,10 @@ export class IAFeedbackSurvey
   }
 
   updated(changed: PropertyValues): void {
+    if (changed.has('showQuestionNumbers') || changed.has('assignedElements')) {
+      this.applyQuestionNumbers();
+    }
+
     const priorSubmissionState = changed.get('submissionState');
     if (priorSubmissionState) {
       if (
@@ -216,6 +221,7 @@ export class IAFeedbackSurvey
 
   disconnectedCallback(): void {
     this.removeEscapeListener();
+    this.stopScrollObserver();
     this.disconnectResizeObserver(this.resizeObserver);
   }
 
@@ -367,14 +373,14 @@ export class IAFeedbackSurvey
   /**
    * Whether the survey is currently submitting its responses.
    */
-  private get isProcessing(): boolean {
+  get isProcessing(): boolean {
     return this.submissionState === 'processing';
   }
 
   /**
    * Whether the survey has been successfully submitted.
    */
-  private get isSubmitted(): boolean {
+  get isSubmitted(): boolean {
     return this.submissionState === 'submitted';
   }
 
@@ -383,7 +389,7 @@ export class IAFeedbackSurvey
    *
    * This will also trigger the Recaptcha widget to begin loading, if it has not already.
    */
-  private showPopup(): void {
+  showPopup(): void {
     if (this.isSubmitted) return;
 
     this.setupResizeObserver();
@@ -395,9 +401,9 @@ export class IAFeedbackSurvey
   }
 
   /**
-   * Closes the popup pane and removes any listeners.
+   * Closes the popup pane and removes any attached listeners.
    */
-  private closePopup(): void {
+  closePopup(): void {
     this.disconnectResizeObserver();
     this.stopScrollObserver();
     this.removeEscapeListener();
@@ -565,6 +571,37 @@ export class IAFeedbackSurvey
   }
 
   /**
+   * Assigns slotted question numbers to all slotted questions that have `numbered`
+   * set to true (indicating that they intend to participate in question numbering).
+   */
+  private applyQuestionNumbers(): void {
+    if (!this.showQuestionNumbers) {
+      // Remove any previously-added question numbers
+      this.assignedElements.forEach(elmt => {
+        elmt.querySelector('[slot=question-number]')?.remove();
+      });
+      return;
+    }
+
+    let questionNumber = 1;
+    this.assignedElements
+      .filter(elmt => canBeNumbered(elmt) && elmt.numbered)
+      .forEach(elmt => {
+        let numberingElmt = elmt.querySelector('[slot=question-number]');
+
+        if (!numberingElmt) {
+          numberingElmt = document.createElement('span');
+          numberingElmt.setAttribute('slot', 'question-number');
+        }
+
+        numberingElmt.textContent = `${questionNumber}. `;
+        elmt.append(numberingElmt);
+
+        questionNumber += 1;
+      });
+  }
+
+  /**
    * Handler for when the background layer outside the popup is clicked, treated
    * as though the Cancel button were clicked.
    */
@@ -580,7 +617,7 @@ export class IAFeedbackSurvey
   private cancel(e: Event) {
     e.preventDefault();
     this.closePopup();
-    if (this.submissionState !== 'submitted') this.resetSubmissionState();
+    if (!this.isSubmitted) this.resetSubmissionState();
   }
 
   /**
@@ -700,10 +737,6 @@ export class IAFeedbackSurvey
     const upvoteColorSvgFilter = css`var(--upvoteColorSvgFilter, invert(34%) sepia(72%) saturate(357%) hue-rotate(111deg) brightness(97%) contrast(95%))`;
 
     const surveyStyles = css`
-      :host {
-        counter-reset: questions;
-      }
-
       ::slotted(:not(:first-child)) {
         --surveyQuestionMargin: 15px 0;
       }

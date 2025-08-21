@@ -25,7 +25,15 @@ describe('IASurveyComment', () => {
     });
   });
 
-  it('validates successfully', async () => {
+  it('is always excluded from numbering', async () => {
+    const el = (await fixture(html`
+      <ia-survey-extra name="foo"></ia-survey-extra>
+    `)) as IASurveyExtra;
+
+    expect(el.numbered).to.be.false;
+  });
+
+  it('always validates successfully', async () => {
     const el = (await fixture(html`
       <ia-survey-extra name="foo"></ia-survey-extra>
     `)) as IASurveyExtra;

@@ -126,6 +126,13 @@ export class IASurveyComment
   /**
    * @inheritdoc
    */
+  get numbered(): boolean {
+    return !this.skipNumber;
+  }
+
+  /**
+   * @inheritdoc
+   */
   get response(): IASurveyQuestionResponse {
     return {
       name: this.prompt,
@@ -140,8 +147,11 @@ export class IASurveyComment
   private get promptTextTemplate(): TemplateResult | typeof nothing {
     if (!this.prompt) return nothing;
 
-    const classes = this.skipNumber ? '' : 'numbered';
-    return html`<div id="prompt-text" class=${classes}>${this.prompt}</div>`;
+    const numberSlot = this.numbered
+      ? html`<slot name="question-number"></slot>`
+      : nothing;
+
+    return html`<div id="prompt-text">${numberSlot}${this.prompt}</div>`;
   }
 
   /**
@@ -211,11 +221,6 @@ export class IASurveyComment
         flex-grow: 1;
         font-size: ${promptFontSize};
         font-weight: ${promptFontWeight};
-      }
-
-      #prompt-text.numbered::before {
-        counter-increment: questions;
-        content: counter(questions) '. ';
       }
 
       #comments {
