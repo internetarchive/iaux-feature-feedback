@@ -10,12 +10,12 @@ export class IASurveyExtra
   /**
    * The name associated with this extra info field.
    */
-  @property({ type: String }) name = '';
+  @property({ type: String, reflect: true }) name = '';
 
   /**
    * The value of this field to be submitted in the survey response.
    */
-  @property({ type: String }) value?: string;
+  @property({ type: String, reflect: true }) value?: string;
 
   /**
    * @inheritdoc
