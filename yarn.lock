@@ -150,6 +150,13 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
+"@internetarchive/ia-styles@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-styles/-/ia-styles-1.0.0.tgz#388113b3f29416c34a77d7a66aed2fff201f9732"
+  integrity sha512-7xvfROl5sUasM3cB+bCwOrO/Qyy08Tk50V7NAGgPKjmHr8LBUk4Q/Qj/ExKcoaiROQE3JlVy9TDANEl8WSLJCw==
+  dependencies:
+    lit "^2.8.0"
+
 "@internetarchive/lazy-loader-service@^0.2.0":
   version "0.2.0"
   resolved "https://registry.npmjs.org/@internetarchive/lazy-loader-service/-/lazy-loader-service-0.2.0.tgz"
@@ -3388,7 +3395,7 @@ lit@^2.2.7:
     lit-element "^3.2.0"
     lit-html "^2.2.0"
 
-lit@^2.3.0:
+lit@^2.3.0, lit@^2.8.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/lit/-/lit-2.8.0.tgz#4d838ae03059bf9cafa06e5c61d8acc0081e974e"
   integrity sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==

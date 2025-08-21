@@ -24,6 +24,7 @@ import type {
   RecaptchaManagerInterface,
   RecaptchaWidgetInterface,
 } from '@internetarchive/recaptcha-manager';
+import { iaButtonStyles } from '@internetarchive/ia-styles';
 
 import type { FeatureFeedbackServiceInterface } from '../feature-feedback-service';
 import {
@@ -521,21 +522,22 @@ export class IAFeedbackSurvey
               <button
                 type="button"
                 id="cancel-button"
-                class="cta-button"
+                class="cta-button ia-button dark"
                 tabindex="0"
                 ?disabled=${shouldDisableControls}
                 @click=${this.cancel}
               >
                 ${msg('Cancel')}
               </button>
-              <input
+              <button
                 type="submit"
                 id="submit-button"
-                class="cta-button"
+                class="cta-button ia-button primary"
                 tabindex="0"
                 ?disabled=${shouldDisableControls}
-                .value=${submitButtonText}
-              />
+              >
+                ${submitButtonText}
+              </button>
             </div>
           </form>
         </div>
@@ -688,19 +690,16 @@ export class IAFeedbackSurvey
       ${popupVerticalPadding} ${popupHorizontalPadding}
     `;
     const popupBorderColor = css`var(--featureFeedbackPopupBorderColor, ${blueColor})`;
-    const submitButtonColor = css`var(--featureFeedbackSubmitButtonColor, ${blueColor})`;
     const betaButtonBorderColor = css`var(--featureFeedbackBetaButtonBorderColor, ${blueColor})`;
     const betaButtonTextColor = css`var(--featureFeedbackBetaButtonTextColor, ${blueColor})`;
     const betaButtonSvgFilter = css`var(--featureFeedbackBetaButtonSvgFilter, ${darkGrayColorSvgFilter})`;
 
-    const cancelButtonColor = css`var(--featureFeedbackCancelButtonColor, #515151)`;
     const popupBlockerColor = css`var(--featureFeedbackPopupBlockerColor, rgba(255, 255, 255, 0.3))`;
-
     const popupBackgroundColor = css`var(--featureFeedbackPopupBackgroundColor, #FBFBFD)`;
 
     const upvoteColorSvgFilter = css`var(--upvoteColorSvgFilter, invert(34%) sepia(72%) saturate(357%) hue-rotate(111deg) brightness(97%) contrast(95%))`;
 
-    return css`
+    const surveyStyles = css`
       :host {
         counter-reset: questions;
       }
@@ -721,6 +720,11 @@ export class IAFeedbackSurvey
         border: 1px solid ${betaButtonBorderColor};
         border-radius: 4px;
         padding: 1px 5px;
+        background: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
       }
 
       .beta-button-icon {
@@ -785,22 +789,6 @@ export class IAFeedbackSurvey
         font-family: inherit;
       }
 
-      button,
-      input[type='submit'] {
-        background: none;
-        cursor: pointer;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: none;
-      }
-
-      button:disabled,
-      input[type='submit']:disabled {
-        cursor: default;
-        opacity: 0.5;
-      }
-
       #form > div:last-child {
         margin-bottom: 0;
       }
@@ -808,6 +796,8 @@ export class IAFeedbackSurvey
       #actions {
         display: flex;
         justify-content: center;
+        align-items: center;
+        column-gap: 10px;
       }
 
       .cta-button {
@@ -816,15 +806,6 @@ export class IAFeedbackSurvey
         border-radius: 4px;
         height: 30px;
         margin: 0;
-      }
-
-      #cancel-button {
-        background-color: ${cancelButtonColor};
-      }
-
-      #submit-button {
-        background-color: ${submitButtonColor};
-        margin-left: 10px;
       }
 
       .sr-only,
@@ -843,5 +824,7 @@ export class IAFeedbackSurvey
         user-select: none !important;
       }
     `;
+
+    return [iaButtonStyles, surveyStyles];
   }
 }
