@@ -585,9 +585,13 @@ export class IAFeedbackSurvey
    * Returns a boolean indicating whether all required survey questions have received a
    * valid response.
    *
-   * - Questions with `required: true` and `type: 'vote'` must have an up/down vote recorded.
-   * - Questions with `required: true` and `type: 'comment'` must have a comment recorded.
-   * - Questions without `required: true`, or having `type: 'extra'`, are always valid.
+   * Questions intended to participate in constraint validation must expose a `validate()`
+   * method that performs whatever checks make sense for that question type. For instance,
+   * required vote questions must have an up/down vote entered, while required comment-only
+   * questions must have non-empty comment text.
+   *
+   * Any slotted children that do not have a `validate()` method will be ignored (i.e., they
+   * are assumed to be valid).
    */
   private validate(): boolean {
     return this.assignedElements
