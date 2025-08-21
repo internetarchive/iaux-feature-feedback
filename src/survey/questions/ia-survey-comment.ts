@@ -76,6 +76,11 @@ export class IASurveyComment
 
   static readonly formAssociated = true;
 
+  static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   //
   // METHODS
   //
@@ -152,8 +157,10 @@ export class IASurveyComment
     return html`
       <textarea
         id="comments"
-        placeholder=${placeholder}
         tabindex="0"
+        placeholder=${placeholder}
+        aria-labelledby="prompt-text"
+        aria-required=${this.required}
         .value=${this.value}
         ?disabled=${this.disabled}
         @change=${this.commentChanged}

@@ -10,6 +10,7 @@ import {
 } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { msg } from '@lit/localize';
 import { Vote } from '../../models';
 import { IASurveyQuestionInterface, IASurveyQuestionResponse } from '../models';
 import { IASurveyComment } from './ia-survey-comment';
@@ -79,6 +80,16 @@ export class IASurveyVote
   @query('#comments') private commentBox?: IASurveyComment;
 
   /**
+   * Label exposed to screen-readers for the upvote button.
+   */
+  private static readonly UPVOTE_SR_LABEL = msg('Vote up');
+
+  /**
+   * Label exposed to screen-readers for the downvote button.
+   */
+  private static readonly DOWNVOTE_SR_LABEL = msg('Vote down');
+
+  /**
    * @inheritdoc
    */
   readonly visible = true;
@@ -86,6 +97,11 @@ export class IASurveyVote
   private readonly internals; // ElementInternals
 
   static readonly formAssociated = true;
+
+  static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
 
   //
   // METHODS
@@ -99,7 +115,13 @@ export class IASurveyVote
   render() {
     return html`
       <div id="container">
-        <div id="prompt-row">
+        <div
+          id="prompt-row"
+          role="radiogroup"
+          aria-labelledby="prompt-text"
+          aria-required=${this.required}
+          aria-disabled=${this.disabled}
+        >
           ${this.promptTextTemplate}${this.voteButtonsTemplate}
         </div>
         ${this.commentFieldTemplate}
@@ -193,6 +215,7 @@ export class IASurveyVote
           @keydown=${this.upvoteKeyPressed}
         />
         ${thumbsUp}
+        <span class="sr-only">${IASurveyVote.UPVOTE_SR_LABEL}</span>
       </label>
 
       <label
@@ -210,6 +233,7 @@ export class IASurveyVote
           @keydown=${this.downvoteKeyPressed}
         />
         ${thumbsDown}
+        <span class="sr-only">${IASurveyVote.DOWNVOTE_SR_LABEL}</span>
       </label>
     `;
   }
@@ -359,6 +383,11 @@ export class IASurveyVote
         cursor: pointer;
       }
 
+      .vote-button:focus-within {
+        outline: 2px solid black;
+        outline-offset: 1px;
+      }
+
       .vote-button svg {
         width: 15px;
         height: 15px;
@@ -426,6 +455,21 @@ export class IASurveyVote
 
       #comments {
         --surveyQuestionMargin: 0;
+      }
+
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        clip: rect(1px, 1px, 1px, 1px) !important;
+        -webkit-clip-path: inset(50%) !important;
+        clip-path: inset(50%) !important;
+        user-select: none !important;
       }
     `;
   }

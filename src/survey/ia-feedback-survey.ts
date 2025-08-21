@@ -128,6 +128,14 @@ export class IAFeedbackSurvey
    */
   @query('#popup') private popup!: HTMLDivElement;
 
+  /**
+   * The popup form's submit button
+   */
+  @query('#submit-button') private submitButton!: HTMLInputElement;
+
+  /**
+   * All elements assigned to the default slot
+   */
   @queryAssignedElements() private assignedElements!: HTMLElement[];
 
   /**
@@ -198,6 +206,10 @@ export class IAFeedbackSurvey
         // so we may need to reposition.
         this.positionPopup();
       }
+    }
+
+    if (changed.has('isOpen') && this.isOpen) {
+      this.focusFirstFormElement();
     }
   }
 
@@ -453,6 +465,7 @@ export class IAFeedbackSurvey
       <button
         id="beta-button"
         tabindex="0"
+        aria-haspopup="dialog"
         ?disabled=${this.disabled}
         @click=${this.showPopup}
       >
@@ -483,9 +496,18 @@ export class IAFeedbackSurvey
         @keydown=${this.backgroundClicked}
       >
         <div
+          class="focus-trap"
+          tabindex="0"
+          @focus=${this.focusSubmitButton}
+        ></div>
+        <div
           id="popup"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="survey-heading"
           style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
         >
+          <h2 id="survey-heading" class="sr-only">${msg('Feedback Survey')}</h2>
           <form
             id="form"
             ?disabled=${shouldDisableControls}
@@ -517,8 +539,27 @@ export class IAFeedbackSurvey
             </div>
           </form>
         </div>
+        <div
+          class="focus-trap"
+          tabindex="0"
+          @focus=${this.focusFirstFormElement}
+        ></div>
       </div>
     `;
+  }
+
+  /**
+   * Assigns focus to the first slotted element in the form.
+   */
+  private focusFirstFormElement(): void {
+    this.assignedElements[0]?.focus();
+  }
+
+  /**
+   * Assigns focus to the submit button at the end of the form.
+   */
+  private focusSubmitButton(): void {
+    this.submitButton?.focus();
   }
 
   /**
@@ -780,6 +821,22 @@ export class IAFeedbackSurvey
       #submit-button {
         background-color: ${submitButtonColor};
         margin-left: 10px;
+      }
+
+      .sr-only,
+      .focus-trap {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        clip: rect(1px, 1px, 1px, 1px) !important;
+        -webkit-clip-path: inset(50%) !important;
+        clip-path: inset(50%) !important;
+        user-select: none !important;
       }
     `;
   }
