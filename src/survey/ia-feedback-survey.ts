@@ -14,6 +14,7 @@ import {
   query,
   queryAssignedElements,
 } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { msg } from '@lit/localize';
 
 import type {
@@ -448,7 +449,7 @@ export class IAFeedbackSurvey
   /**
    * Template for the feedback button's up/down thumb icons, if they are to be shown.
    */
-  private get feedbackButtonThumbsTemplate() {
+  private get feedbackButtonThumbsTemplate(): TemplateResult | typeof nothing {
     if (!this.showButtonThumbs) return nothing;
 
     return html`
@@ -460,14 +461,14 @@ export class IAFeedbackSurvey
   /**
    * Template for the feedback button's success checkmark.
    */
-  private get feedbackButtonCheckTemplate() {
+  private get feedbackButtonCheckTemplate(): TemplateResult {
     return html`<span class="beta-button-icon success">&check;</span>`;
   }
 
   /**
    * Template for the feedback button that opens the survey when clicked.
    */
-  private get feedbackButtonTemplate() {
+  private get feedbackButtonTemplate(): TemplateResult {
     return html`
       <button
         id="beta-button"
@@ -489,11 +490,22 @@ export class IAFeedbackSurvey
    * Template for the full popup survey that appears when the feedback
    * button is clicked.
    */
-  private get popupTemplate() {
+  private get popupTemplate(): TemplateResult {
     const shouldDisableControls = this.isProcessing || this.isSubmitted;
     const submitButtonText = this.isProcessing
       ? IAFeedbackSurvey.SUBMIT_BUTTON_PROCESSING_TEXT
       : IAFeedbackSurvey.SUBMIT_BUTTON_NORMAL_TEXT;
+
+    const errorMessage = this.error
+      ? html`<div id="error">${this.error}</div>`
+      : nothing;
+
+    const popupStyles = styleMap({
+      left: `${this.popupTopX}px`,
+      top: `${this.popupTopY}px`,
+    });
+
+    const stopPropagation = (e: Event) => e.stopPropagation();
 
     return html`
       <div
@@ -512,18 +524,18 @@ export class IAFeedbackSurvey
           role="dialog"
           aria-modal="true"
           aria-labelledby="survey-heading"
-          style="left: ${this.popupTopX}px; top: ${this.popupTopY}px"
+          style=${popupStyles}
         >
           <h2 id="survey-heading" class="sr-only">${msg('Feedback Survey')}</h2>
           <form
             id="form"
             ?disabled=${shouldDisableControls}
-            @click=${(e: Event) => e.stopPropagation()}
-            @keydown=${(e: Event) => e.stopPropagation()}
+            @click=${stopPropagation}
+            @keydown=${stopPropagation}
             @submit=${this.submit}
           >
             <slot id="questions-slot"></slot>
-            ${this.error ? html`<div id="error">${this.error}</div>` : nothing}
+            ${errorMessage}
             <div id="actions">
               <button
                 type="button"
@@ -737,10 +749,6 @@ export class IAFeedbackSurvey
     const upvoteColorSvgFilter = css`var(--upvoteColorSvgFilter, invert(34%) sepia(72%) saturate(357%) hue-rotate(111deg) brightness(97%) contrast(95%))`;
 
     const surveyStyles = css`
-      ::slotted(:not(:first-child)) {
-        --surveyQuestionMargin: 15px 0;
-      }
-
       #container {
         display: inline-block;
       }
