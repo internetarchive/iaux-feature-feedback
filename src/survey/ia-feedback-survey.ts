@@ -132,9 +132,14 @@ export class IAFeedbackSurvey
   @query('#popup') private popup!: HTMLDivElement;
 
   /**
-   * The popup form's submit button
+   * The popup form's Cancel button
    */
-  @query('#submit-button') private submitButton!: HTMLInputElement;
+  @query('#cancel-button') private cancelButton!: HTMLButtonElement;
+
+  /**
+   * The popup form's Submit button
+   */
+  @query('#submit-button') private submitButton!: HTMLButtonElement;
 
   /**
    * All elements assigned to the default slot
@@ -569,17 +574,36 @@ export class IAFeedbackSurvey
   }
 
   /**
-   * Assigns focus to the first slotted element in the form.
+   * Assigns focus to the first focusable slotted element in the form.
    */
   private focusFirstFormElement(): void {
-    this.assignedElements[0]?.focus();
+    // Blur any previously-focused element so that the active element is null
+    const rootNode = this.getRootNode() as Document | ShadowRoot;
+    const previousActiveElmt = rootNode.activeElement as HTMLElement | null;
+    previousActiveElmt?.blur?.();
+
+    // Iterate through the slotted form elements and try to focus each one until we succeed
+    for (const elmt of this.assignedElements) {
+      elmt.focus();
+      if (rootNode.activeElement) return; // We found the first focusable element, we're done
+    }
+
+    // If there were no focusable slotted elements, just focus the Cancel button next in line
+    this.focusCancelButton();
   }
 
   /**
-   * Assigns focus to the submit button at the end of the form.
+   * Assigns focus to the Cancel button at the end of the form.
+   */
+  private focusCancelButton(): void {
+    this.cancelButton.focus();
+  }
+
+  /**
+   * Assigns focus to the Submit button at the end of the form.
    */
   private focusSubmitButton(): void {
-    this.submitButton?.focus();
+    this.submitButton.focus();
   }
 
   /**
