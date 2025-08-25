@@ -579,13 +579,11 @@ export class IAFeedbackSurvey
   private focusFirstFormElement(): void {
     // Blur any previously-focused element so that the active element is null
     const rootNode = this.getRootNode() as Document | ShadowRoot;
-    const previousActiveElmt = rootNode.activeElement as HTMLElement | null;
-    previousActiveElmt?.blur?.();
 
     // Iterate through the slotted form elements and try to focus each one until we succeed
     for (const elmt of this.assignedElements) {
       elmt.focus();
-      if (rootNode.activeElement) return; // We found the first focusable element, we're done
+      if (rootNode.activeElement === elmt) return; // We found the first focusable element, we're done
     }
 
     // If there were no focusable slotted elements, just focus the Cancel button next in line
