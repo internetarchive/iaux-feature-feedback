@@ -2,13 +2,17 @@ import { RecaptchaManager } from '@internetarchive/recaptcha-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { html, css, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import '../src/feature-feedback';
 import { FeatureFeedbackService } from '../src/feature-feedback-service';
+import '../src/feature-feedback';
+import '../src/survey/ia-feedback-survey';
+import '../src/survey/questions/ia-survey-vote';
+import '../src/survey/questions/ia-survey-comment';
+import '../src/survey/questions/ia-survey-extra';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
   recaptchaManager = new RecaptchaManager({
-    defaultSiteKey: '',
+    defaultSiteKey: 'foo',
   });
 
   featureFeedbackService = new FeatureFeedbackService({
@@ -96,6 +100,50 @@ export class AppRoot extends LitElement {
         fugiat. Aute excepteur enim ad consectetur duis eu aute sint fugiat.
         Nulla cillum fugiat tempor esse non eu dolore adipisicing magna.
       </p>
+
+      <ia-feedback-survey
+        showButtonThumbs
+        showQuestionNumbers
+        .surveyIdentifier=${'demo-survey'}
+        .recaptchaManager=${this.recaptchaManager}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .resizeObserver=${this.resizeObserver}
+      >
+        <ia-survey-vote
+          prompt="How do you feel about foo?"
+          required
+        ></ia-survey-vote>
+        <ia-survey-extra name="foo" value="bar"></ia-survey-extra>
+        <p>
+          This is some embedded explanatory text. The above question requires a
+          response, but the next question is optional.
+        </p>
+        <ia-survey-vote
+          prompt="How do you feel about bar?"
+          showComments
+          commentPlaceholder="You may enter an optional comment as well..."
+        ></ia-survey-vote>
+        <p>The following question should be disabled.</p>
+        <ia-survey-vote
+          prompt="How do you feel about baz?"
+          disabled
+        ></ia-survey-vote>
+        <p>The following question should not be numbered.</p>
+        <ia-survey-vote
+          prompt="How do you feel about quux?"
+          skipNumber
+        ></ia-survey-vote>
+        <ia-survey-comment
+          prompt="What does foobar mean to you?"
+          placeholder="You must answer this question."
+          required
+        ></ia-survey-comment>
+        <ia-survey-comment
+          prompt="Anything else to add?"
+          placeholder="Please share... (optional)"
+          style="--commentResize: vertical;"
+        ></ia-survey-comment>
+      </ia-feedback-survey>
     `;
   }
 
@@ -106,6 +154,10 @@ export class AppRoot extends LitElement {
 
     .right {
       float: right;
+    }
+
+    ia-feedback-survey > p {
+      font-size: 12px;
     }
   `;
 }
