@@ -534,6 +534,7 @@ export class FeatureFeedback
     const submitButtonColor = css`var(--featureFeedbackSubmitButtonColor, ${blueColor})`;
     const betaButtonBorderColor = css`var(--featureFeedbackBetaButtonBorderColor, ${blueColor})`;
     const betaButtonTextColor = css`var(--featureFeedbackBetaButtonTextColor, ${blueColor})`;
+    const betaButtonBackground = css`var(--featureFeedbackBetaButtonBackground, none)`;
     const betaButtonSvgFilter = css`var(--featureFeedbackBetaButtonSvgFilter, ${darkGrayColorSvgFilter})`;
 
     const cancelButtonColor = css`var(--featureFeedbackCancelButtonColor, #515151)`;
@@ -569,6 +570,7 @@ export class FeatureFeedback
         font-weight: bold;
         font-style: italic;
         color: ${betaButtonTextColor};
+        background: ${betaButtonBackground};
         border: 1px solid ${betaButtonBorderColor};
         border-radius: 4px;
         padding: 1px 5px;

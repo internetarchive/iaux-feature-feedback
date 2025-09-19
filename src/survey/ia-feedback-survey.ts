@@ -763,6 +763,7 @@ export class IAFeedbackSurvey
     const popupBorderColor = css`var(--featureFeedbackPopupBorderColor, ${blueColor})`;
     const betaButtonBorderColor = css`var(--featureFeedbackBetaButtonBorderColor, ${blueColor})`;
     const betaButtonTextColor = css`var(--featureFeedbackBetaButtonTextColor, ${blueColor})`;
+    const betaButtonBackground = css`var(--featureFeedbackBetaButtonBackground, none)`;
     const betaButtonSvgFilter = css`var(--featureFeedbackBetaButtonSvgFilter, ${darkGrayColorSvgFilter})`;
 
     const popupBlockerColor = css`var(--featureFeedbackPopupBlockerColor, rgba(255, 255, 255, 0.3))`;
@@ -783,7 +784,7 @@ export class IAFeedbackSurvey
         border: 1px solid ${betaButtonBorderColor};
         border-radius: 4px;
         padding: 1px 5px;
-        background: none;
+        background: ${betaButtonBackground};
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;

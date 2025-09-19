@@ -92,6 +92,28 @@ export class AppRoot extends LitElement {
       </feature-feedback>
 
       <p>
+        Et esse sunt officia velit. Excepteur non sint irure non consectetur
+        labore deserunt aliqua elit. Commodo cupidatat tempor minim
+        reprehenderit pariatur aliqua fugiat fugiat Lorem anim est nisi culpa
+        ea. Sint fugiat aute reprehenderit ullamco magna ullamco exercitation ea
+        sunt reprehenderit. Incididunt commodo sunt velit consequat elit amet ea
+        aute et tempor. Amet qui ut nostrud ullamco labore tempor.
+      </p>
+
+      With custom styling:
+      <feature-feedback
+        style="
+          --featureFeedbackBetaButtonBackground: linear-gradient(to bottom right, #2fffff 0%, #90ff90 100%);
+          --featureFeedbackPopupBackgroundColor: #ddddff;
+        "
+        .recaptchaManager=${this.recaptchaManager}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .resizeObserver=${this.resizeObserver}
+        .featureIdentifier=${'demo-feature'}
+      >
+      </feature-feedback>
+
+      <p>
         Nulla reprehenderit et consequat cupidatat reprehenderit pariatur anim
         aute nulla. Sunt labore mollit nulla irure laboris sunt occaecat. Ea
         velit laboris in dolore do nulla Lorem irure exercitation aute et. Ea id
