@@ -32,6 +32,10 @@ async function translatedIds(): Promise<string[]> {
 }
 
 describe('published es locale', () => {
+  afterEach(async () => {
+    await setLocale('en');
+  });
+
   it('has exactly the translated units in the XLIFF', async () => {
     // An untranslated message has to be missing, not English. The app merges
     // this module with others, and an English entry would override a real
@@ -73,7 +77,5 @@ describe('published es locale', () => {
     expect(text(vote, '#upvote .sr-only')).to.equal('Votar a favor');
     expect(text(vote, '#downvote .sr-only')).to.equal('Votar en contra');
     expect(placeholder()).to.equal('Comentarios (opcional)');
-
-    await setLocale('en');
   });
 });
