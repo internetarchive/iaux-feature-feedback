@@ -15,7 +15,7 @@ import {
   queryAssignedElements,
 } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 
 import type {
   SharedResizeObserverInterface,
@@ -41,6 +41,7 @@ import { thumbsUp } from '../img/thumb-up';
 import { thumbsDown } from '../img/thumb-down';
 
 @customElement('ia-feedback-survey')
+@localized()
 export class IAFeedbackSurvey
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
@@ -157,26 +158,30 @@ export class IAFeedbackSurvey
   /**
    * Text to show on the submit button when idle.
    */
-  private static readonly SUBMIT_BUTTON_NORMAL_TEXT = msg('Submit feedback');
+  private static get SUBMIT_BUTTON_NORMAL_TEXT(): string {
+    return msg('Submit feedback');
+  }
 
   /**
    * Text to show on the submit button while submitting a response.
    */
-  private static readonly SUBMIT_BUTTON_PROCESSING_TEXT = msg('Submitting...');
+  private static get SUBMIT_BUTTON_PROCESSING_TEXT(): string {
+    return msg('Submitting...');
+  }
 
   /**
    * Error message to show when some required questions do not have responses.
    */
-  private static readonly ERROR_MESSAGE_MISSING_REQUIRED_INPUT = msg(
-    'Please respond to the indicated questions.'
-  );
+  private static get ERROR_MESSAGE_MISSING_REQUIRED_INPUT(): string {
+    return msg('Please respond to the indicated questions.');
+  }
 
   /**
    * Error message to show when the survey submission encounters an error response.
    */
-  private static readonly ERROR_MESSAGE_SUBMIT_REQUEST_FAILED = msg(
-    'There was an error submitting your feedback.'
-  );
+  private static get ERROR_MESSAGE_SUBMIT_REQUEST_FAILED(): string {
+    return msg('There was an error submitting your feedback.');
+  }
 
   //
   // METHODS

@@ -8,10 +8,11 @@ import {
   PropertyValues,
 } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { IASurveyQuestionInterface, IASurveyQuestionResponse } from '../models';
 
 @customElement('ia-survey-comment')
+@localized()
 export class IASurveyComment
   extends LitElement
   implements IASurveyQuestionInterface
@@ -58,14 +59,16 @@ export class IASurveyComment
   /**
    * Default placeholder text for required respones.
    */
-  private static readonly DEFAULT_PLACEHOLDER_REQUIRED = msg('Comments');
+  private static get DEFAULT_PLACEHOLDER_REQUIRED(): string {
+    return msg('Comments');
+  }
 
   /**
    * Default placeholder text for optional responses.
    */
-  private static readonly DEFAULT_PLACEHOLDER_OPTIONAL = msg(
-    'Comments (optional)'
-  );
+  private static get DEFAULT_PLACEHOLDER_OPTIONAL(): string {
+    return msg('Comments (optional)');
+  }
 
   /**
    * @inheritdoc
