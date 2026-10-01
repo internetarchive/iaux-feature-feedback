@@ -33,6 +33,7 @@ import {
   canBeNumbered,
   canBeValidated,
   hasSurveyResponse,
+  SurveyError,
   SurveySubmissionState,
 } from './models';
 import { timedPromise } from '../util/timed-promise';
@@ -52,9 +53,10 @@ export class IAFeedbackSurvey
   @property({ type: String }) surveyIdentifier?: string;
 
   /**
-   * What text to display on the button that opens the survey popup.
+   * What text to display on the button that opens the survey popup
+   * (default 'Feedback', localized).
    */
-  @property({ type: String }) buttonText = 'Feedback';
+  @property({ type: String }) buttonText?: string;
 
   /**
    * Whether to show the up/down thumbs beside the feedback button text (default `false`).
@@ -120,7 +122,7 @@ export class IAFeedbackSurvey
   /**
    * Error message to display.
    */
-  @state() private error?: TemplateResult;
+  @state() private error?: SurveyError;
 
   /**
    * The feedback button's container element.
@@ -487,13 +489,30 @@ export class IAFeedbackSurvey
         ?disabled=${this.disabled}
         @click=${this.showPopup}
       >
-        <span id="button-text">${this.buttonText}</span>
+        <span id="button-text">${this.buttonText ?? msg('Feedback')}</span>
         ${this.isSubmitted
           ? this.feedbackButtonCheckTemplate
           : this.feedbackButtonThumbsTemplate}
       </button>
       ${this.popupTemplate}
     `;
+  }
+
+  /**
+   * Template for the current error message, if any.
+   */
+  private get errorTemplate(): TemplateResult | typeof nothing {
+    const { error } = this;
+    if (!error) return nothing;
+    const message =
+      error.kind === 'missingInput'
+        ? IAFeedbackSurvey.ERROR_MESSAGE_MISSING_REQUIRED_INPUT
+        : IAFeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED;
+    const detail =
+      error.kind === 'submitFailed' && error.detail !== undefined
+        ? html`<br />${msg('Error: ')}${error.detail}`
+        : nothing;
+    return html`<div id="error">${message}${detail}</div>`;
   }
 
   /**
@@ -506,9 +525,7 @@ export class IAFeedbackSurvey
       ? IAFeedbackSurvey.SUBMIT_BUTTON_PROCESSING_TEXT
       : IAFeedbackSurvey.SUBMIT_BUTTON_NORMAL_TEXT;
 
-    const errorMessage = this.error
-      ? html`<div id="error">${this.error}</div>`
-      : nothing;
+    const errorMessage = this.errorTemplate;
 
     const popupStyles = styleMap({
       left: `${this.popupTopX}px`,
@@ -686,7 +703,7 @@ export class IAFeedbackSurvey
     e?.preventDefault();
 
     if (!this.validate()) {
-      this.error = html`${IAFeedbackSurvey.ERROR_MESSAGE_MISSING_REQUIRED_INPUT}`;
+      this.error = { kind: 'missingInput' };
       this.setSubmissionState('error');
       return;
     }
@@ -741,13 +758,14 @@ export class IAFeedbackSurvey
         this.setSubmissionState('submitted');
         if (popupWasOpen) this.closePopup();
       } else {
-        this.error = html`${IAFeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED}`;
+        this.error = { kind: 'submitFailed' };
         this.setSubmissionState('error');
       }
     } catch (err) {
-      this.error = html`${IAFeedbackSurvey.ERROR_MESSAGE_SUBMIT_REQUEST_FAILED}
-        <br />
-        ${msg('Error: ')}${err instanceof Error ? err.message : err}`;
+      this.error = {
+        kind: 'submitFailed',
+        detail: err instanceof Error ? err.message : String(err),
+      };
       this.setSubmissionState('error');
     }
   }

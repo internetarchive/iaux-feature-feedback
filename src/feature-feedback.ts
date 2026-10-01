@@ -8,6 +8,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { property, customElement, query, state } from 'lit/decorators.js';
+import { localized, msg } from '@lit/localize';
 
 import type {
   SharedResizeObserverInterface,
@@ -18,21 +19,33 @@ import type {
   RecaptchaWidgetInterface,
 } from '@internetarchive/recaptcha-manager';
 import type { FeatureFeedbackServiceInterface } from './feature-feedback-service';
-import type { FeatureFeedbackDisplayMode, Vote } from './models';
+import type {
+  FeatureFeedbackDisplayMode,
+  FeatureFeedbackError,
+  Vote,
+} from './models';
 
 import { thumbsUp } from './img/thumb-up';
 import { thumbsDown } from './img/thumb-down';
 
 @customElement('feature-feedback')
+@localized()
 export class FeatureFeedback
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
 {
   @property({ type: String }) featureIdentifier?: string;
 
-  @property({ type: String }) prompt = 'Do you find this feature useful?';
+  /**
+   * The prompt text shown beside the vote buttons
+   * (default 'Do you find this feature useful?', localized).
+   */
+  @property({ type: String }) prompt?: string;
 
-  @property({ type: String }) buttonText = 'Beta';
+  /**
+   * The text on the button in `button` display mode (default 'Beta', localized).
+   */
+  @property({ type: String }) buttonText?: string;
 
   /**
    * - `button` renders a single button with the provided button text (or default 'Beta').
@@ -66,7 +79,7 @@ export class FeatureFeedback
 
   @state() private voteSubmitted = false;
 
-  @state() private error?: TemplateResult;
+  @state() private error?: FeatureFeedbackError;
 
   @state() private voteNeedsChoosing = false;
 
@@ -231,7 +244,7 @@ export class FeatureFeedback
         tabindex="0"
         ?disabled=${this.disabled}
       >
-        <span id="button-text">${this.buttonText}</span>
+        <span id="button-text">${this.buttonText ?? msg('Beta')}</span>
         <span
           class="beta-button-thumb upvote-button ${this.voteSubmitted
             ? this.upvoteButtonClass
@@ -260,7 +273,7 @@ export class FeatureFeedback
         ?disabled=${this.processing || this.voteSubmitted}
       >
         <div class="prompt">
-          <span class="prompt-text">${this.prompt}</span>
+          <span class="prompt-text">${this.promptText}</span>
           <label
             tabindex="0"
             role="button"
@@ -295,7 +308,7 @@ export class FeatureFeedback
             ${thumbsDown}
           </label>
           <button id="comment-button" type="button" @click=${this.showPopup}>
-            Leave a comment
+            ${msg('Leave a comment')}
           </button>
         </div>
       </form>
@@ -324,7 +337,7 @@ export class FeatureFeedback
             ?disabled=${this.processing || this.voteSubmitted}
           >
             <div class="prompt">
-              <div class="prompt-text">${this.prompt}</div>
+              <div class="prompt-text">${this.promptText}</div>
               <label
                 tabindex="0"
                 role="button"
@@ -365,13 +378,13 @@ export class FeatureFeedback
             </div>
             <div>
               <textarea
-                placeholder="Comments (optional)"
+                placeholder=${msg('Comments (optional)')}
                 id="comments"
                 tabindex="0"
                 ?disabled=${this.processing}
               ></textarea>
             </div>
-            ${this.error ? html`<div id="error">${this.error}</div>` : nothing}
+            ${this.errorTemplate}
             <div id="actions">
               <button
                 @click=${this.cancel}
@@ -380,13 +393,15 @@ export class FeatureFeedback
                 tabindex="0"
                 ?disabled=${this.processing}
               >
-                Cancel
+                ${msg('Cancel')}
               </button>
               <input
                 type="submit"
                 id="submit-button"
                 class="cta-button"
-                .value=${this.processing ? 'Submitting...' : 'Submit feedback'}
+                .value=${this.processing
+                  ? msg('Submitting...')
+                  : msg('Submit feedback')}
                 tabindex="0"
                 ?disabled=${this.processing}
               />
@@ -395,6 +410,27 @@ export class FeatureFeedback
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Template for the current error message, if any.
+   */
+  private get errorTemplate(): TemplateResult | typeof nothing {
+    const { error } = this;
+    if (!error) return nothing;
+    const message =
+      error.kind === 'noVote'
+        ? msg('Please select a vote.')
+        : msg('There was an error submitting your feedback.');
+    const detail =
+      error.kind === 'submitFailed' && error.detail !== undefined
+        ? html`<br />${msg('Error: ')}${error.detail}`
+        : nothing;
+    return html`<div id="error">${message}${detail}</div>`;
+  }
+
+  private get promptText(): string {
+    return this.prompt ?? msg('Do you find this feature useful?');
   }
 
   private get upvoteSelected() {
@@ -480,7 +516,7 @@ export class FeatureFeedback
 
     if (!this.vote) {
       this.voteNeedsChoosing = true;
-      this.error = html`Please select a vote.`;
+      this.error = { kind: 'noVote' };
       return;
     }
 
@@ -512,11 +548,13 @@ export class FeatureFeedback
         this.voteSubmitted = true;
         if (popupWasOpen) this.closePopup();
       } else {
-        this.error = html`There was an error submitting your feedback.`;
+        this.error = { kind: 'submitFailed' };
       }
     } catch (err) {
-      this.error = html`There was an error submitting your feedback.<br />Error:
-        ${err instanceof Error ? err.message : err}`;
+      this.error = {
+        kind: 'submitFailed',
+        detail: err instanceof Error ? err.message : String(err),
+      };
     }
 
     this.processing = false;

@@ -1,9 +1,11 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import { configureLocalization } from '@lit/localize';
 import { templates } from '../../src/locales/es';
+import type { FeatureFeedback } from '../../src/feature-feedback';
 import type { IAFeedbackSurvey } from '../../src/survey/ia-feedback-survey';
 import type { IASurveyVote } from '../../src/survey/questions/ia-survey-vote';
 import type { IASurveyComment } from '../../src/survey/questions/ia-survey-comment';
+import '../../src/feature-feedback';
 import '../../src/survey/ia-feedback-survey';
 import '../../src/survey/questions/ia-survey-vote';
 import '../../src/survey/questions/ia-survey-comment';
@@ -62,6 +64,7 @@ describe('published es locale', () => {
     const placeholder = () =>
       comment?.shadowRoot?.querySelector('textarea')?.placeholder;
 
+    expect(text(el, '#button-text')).to.equal('Feedback');
     expect(text(el, '#submit-button')).to.equal('Submit feedback');
 
     await setLocale('es');
@@ -71,11 +74,42 @@ describe('published es locale', () => {
       comment?.updateComplete,
     ]);
 
+    expect(text(el, '#button-text')).to.equal('Comentarios');
     expect(text(el, '#survey-heading')).to.equal('Encuesta de opinión');
     expect(text(el, '#cancel-button')).to.equal('Cancelar');
     expect(text(el, '#submit-button')).to.equal('Enviar comentarios');
     expect(text(vote, '#upvote .sr-only')).to.equal('Votar a favor');
     expect(text(vote, '#downvote .sr-only')).to.equal('Votar en contra');
     expect(placeholder()).to.equal('Comentarios (opcional)');
+  });
+
+  it('re-renders feature-feedback in Spanish when the app switches locale', async () => {
+    const el = await fixture<FeatureFeedback>(html`
+      <feature-feedback displayMode="vote-prompt"></feature-feedback>
+    `);
+    const root = el.shadowRoot;
+    const text = (selector: string) =>
+      root?.querySelector(selector)?.textContent?.trim();
+    const placeholder = () =>
+      root?.querySelector<HTMLTextAreaElement>('#comments')?.placeholder;
+    const submitValue = () =>
+      root?.querySelector<HTMLInputElement>('#submit-button')?.value;
+
+    expect(text('.prompt-text')).to.equal('Do you find this feature useful?');
+    expect(text('#cancel-button')).to.equal('Cancel');
+
+    root?.querySelector<HTMLInputElement>('#submit-button')?.click();
+    await el.updateComplete;
+    expect(text('#error')).to.equal('Please select a vote.');
+
+    await setLocale('es');
+    await el.updateComplete;
+
+    expect(text('.prompt-text')).to.equal('¿Te resulta útil esta función?');
+    expect(text('#comment-button')).to.equal('Deja un comentario');
+    expect(text('#cancel-button')).to.equal('Cancelar');
+    expect(submitValue()).to.equal('Enviar comentarios');
+    expect(placeholder()).to.equal('Comentarios (opcional)');
+    expect(text('#error')).to.equal('Selecciona un voto.');
   });
 });

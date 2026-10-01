@@ -1,4 +1,12 @@
 /**
+ * An error to show in the survey popup. The message text comes from this at
+ * render time, so it follows the current locale.
+ */
+export type SurveyError =
+  | { kind: 'missingInput' }
+  | { kind: 'submitFailed'; detail?: string };
+
+/**
  * The current state of a survey submission:
  *  - `idle`: No submit has succeeded or been attempted since the popup was last toggled.
  *  - `processing`: The widget is currently submitting a response.
