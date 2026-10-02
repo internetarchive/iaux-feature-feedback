@@ -1,6 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { html, fixture, expect, aTimeout, waitUntil } from '@open-wc/testing';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
+import type { FeatureFeedbackServiceInterface } from '../../src/feature-feedback-service';
 import { MockFeatureFeedbackService } from '../mocks/mock-feature-feedback-service';
 import { MockRecaptchaManager } from '../mocks/mock-recaptcha-manager';
 import { IAFeedbackSurvey } from '../../src/survey/ia-feedback-survey';
@@ -312,6 +313,48 @@ describe('IAFeedbackSurvey', () => {
     expect(voteQuestion.disabled).to.be.true;
     // Second question was temporarily disabled while processing, but gets re-enabled after
     expect(commentQuestion.disabled).to.be.false;
+  });
+
+  it('shows the error detail if submission throws', async () => {
+    const service: FeatureFeedbackServiceInterface = {
+      submitFeedback: async () => ({ success: true }),
+      submitSurvey: async () => {
+        throw new Error('network down');
+      },
+    };
+    const recaptchaManager = new MockRecaptchaManager();
+
+    let submissionState: SurveySubmissionState;
+    const el = (await fixture(html`
+      <ia-feedback-survey
+        surveyIdentifier="foo-survey"
+        .featureFeedbackService=${service}
+        .recaptchaManager=${recaptchaManager}
+        @submissionStateChanged=${(e: CustomEvent<SurveySubmissionState>) => {
+          submissionState = e.detail;
+        }}
+      >
+        <ia-survey-vote prompt="foo" vote="up"></ia-survey-vote>
+      </ia-feedback-survey>
+    `)) as IAFeedbackSurvey;
+
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+
+    const submitButton = el.shadowRoot!.querySelector(
+      '#submit-button'
+    ) as HTMLInputElement;
+    submitButton.click();
+    await waitUntil(() => submissionState === 'error');
+
+    const errorMessage = el.shadowRoot!.querySelector(
+      '#error'
+    ) as HTMLDivElement;
+    expect(errorMessage.textContent).to.contain('Error: ');
+    expect(errorMessage.textContent).to.contain('network down');
   });
 
   it('submits responses to the service when submit button is clicked', async () => {

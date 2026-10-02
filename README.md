@@ -127,6 +127,37 @@ Both the `<ia-survey-vote>` and `<ia-survey-comment>` components accept optional
  - `--commentResize` (`none`, `horizontal`, `vertical`, or `both` -- defaults to `none`). See [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/resize) for more details.
 
 
+## Localization
+
+Wrap user-facing text in `msg()` from `@lit/localize`, inside `render()` or a getter it calls. The first argument has to be a literal: a string, `` str`...${x}` `` when it has an expression, or `` html`...` `` when it has markup. A `msg()` that runs at module scope or in a static field resolves once at import, so it never changes language.
+
+This package never calls `configureLocalization`. `@lit/localize` can only be configured once per page, so the app owns that call and loads one bundle holding its own messages and ours. We publish our translations for the app to merge in:
+
+```bash
+yarn run strings:extract   # add new msg() strings to xliff/<locale>.xlf
+# translate the empty <target>s in xliff/<locale>.xlf
+yarn run strings:build     # write src/locales/<locale>.ts
+```
+
+Commit all three: the XLIFF, the generated module and the source change.
+
+### What gets published
+
+`@internetarchive/feature-feedback/locales/<locale>.js` exports `templates`, the same shape `lit-localize build` writes in runtime mode: an object keyed by message id (a hash of the English source) whose values are what `loadLocale` returns. It only holds messages that have a translation. A message with no translation is left out instead of falling back to English, so merging it can never override another package's or the app's translation of the same text.
+
+To merge it, an app spreads it under its own templates, app last so the app wins a conflict:
+
+```ts
+import { templates as feedback } from '@internetarchive/feature-feedback/locales/es.js';
+import { templates as app } from './app-es';
+
+export const templates = { ...feedback, ...app };
+```
+
+Each new locale needs its own `locales/<locale>.js` and `locales/<locale>.d.ts` at the package root, re-exporting from `dist/src/locales/`.
+
+The XLIFF in `xliff/` is where translations are edited. It isn't published.
+
 ## Local Demo with `web-dev-server`
 ```bash
 yarn start
