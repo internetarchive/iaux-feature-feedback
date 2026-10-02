@@ -1,6 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { html, fixture, expect, aTimeout } from '@open-wc/testing';
 import { FeatureFeedback } from '../src/feature-feedback';
+import type { FeatureFeedbackServiceInterface } from '../src/feature-feedback-service';
 import { MockFeatureFeedbackService } from './mocks/mock-feature-feedback-service';
 import { MockRecaptchaManager } from './mocks/mock-recaptcha-manager';
 import '../src/feature-feedback';
@@ -192,6 +193,86 @@ describe('FeatureFeedback', () => {
       comments: '',
       recaptchaToken: 'boop',
     });
+  });
+
+  it('shows a generic error message if the service reports failure', async () => {
+    const service = new MockFeatureFeedbackService({
+      returnValue: { success: false },
+    });
+    const recaptchaManager = new MockRecaptchaManager();
+
+    const el = (await fixture(html`
+      <feature-feedback
+        featureIdentifier="foo-feature"
+        .featureFeedbackService=${service}
+        .recaptchaManager=${recaptchaManager}
+      ></feature-feedback>
+    `)) as FeatureFeedback;
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+    const upvoteButton = el.shadowRoot!.querySelector(
+      'label.vote-button.upvote-button'
+    ) as HTMLLabelElement;
+    upvoteButton.click();
+    await el.updateComplete;
+    const submitButton = el.shadowRoot!.querySelector(
+      '#submit-button'
+    ) as HTMLInputElement;
+    submitButton.click();
+    await el.updateComplete;
+    await aTimeout(0);
+    await el.updateComplete;
+
+    const errorMessage = el.shadowRoot!.querySelector(
+      '#error'
+    ) as HTMLDivElement;
+    expect(errorMessage.textContent).to.equal(
+      'There was an error submitting your feedback.'
+    );
+  });
+
+  it('shows the error detail if submission throws', async () => {
+    const service: FeatureFeedbackServiceInterface = {
+      submitFeedback: async () => {
+        throw new Error('boom');
+      },
+      submitSurvey: async () => ({ success: true }),
+    };
+    const recaptchaManager = new MockRecaptchaManager();
+
+    const el = (await fixture(html`
+      <feature-feedback
+        featureIdentifier="foo-feature"
+        .featureFeedbackService=${service}
+        .recaptchaManager=${recaptchaManager}
+      ></feature-feedback>
+    `)) as FeatureFeedback;
+    const button = el.shadowRoot!.querySelector(
+      '#beta-button'
+    ) as HTMLButtonElement;
+    button.click();
+    await el.updateComplete;
+    const upvoteButton = el.shadowRoot!.querySelector(
+      'label.vote-button.upvote-button'
+    ) as HTMLLabelElement;
+    upvoteButton.click();
+    await el.updateComplete;
+    const submitButton = el.shadowRoot!.querySelector(
+      '#submit-button'
+    ) as HTMLInputElement;
+    submitButton.click();
+    await el.updateComplete;
+    await aTimeout(0);
+    await el.updateComplete;
+
+    const errorMessage = el.shadowRoot!.querySelector(
+      '#error'
+    ) as HTMLDivElement;
+    expect(errorMessage.textContent).to.contain('Error: ');
+    expect(errorMessage.textContent).to.contain('boom');
   });
 
   it('in vote-prompt mode, shows the popup when "Leave a comment" is clicked', async () => {
