@@ -10,7 +10,7 @@ import {
 } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { Vote } from '../../models';
 import { IASurveyQuestionInterface, IASurveyQuestionResponse } from '../models';
 import { IASurveyComment } from './ia-survey-comment';
@@ -21,6 +21,7 @@ import { thumbsDown } from '../../img/thumb-down';
 import './ia-survey-comment';
 
 @customElement('ia-survey-vote')
+@localized()
 export class IASurveyVote
   extends LitElement
   implements IASurveyQuestionInterface
@@ -82,12 +83,16 @@ export class IASurveyVote
   /**
    * Label exposed to screen-readers for the upvote button.
    */
-  private static readonly UPVOTE_SR_LABEL = msg('Vote up');
+  private static get UPVOTE_SR_LABEL(): string {
+    return msg('Vote up');
+  }
 
   /**
    * Label exposed to screen-readers for the downvote button.
    */
-  private static readonly DOWNVOTE_SR_LABEL = msg('Vote down');
+  private static get DOWNVOTE_SR_LABEL(): string {
+    return msg('Vote down');
+  }
 
   /**
    * @inheritdoc
